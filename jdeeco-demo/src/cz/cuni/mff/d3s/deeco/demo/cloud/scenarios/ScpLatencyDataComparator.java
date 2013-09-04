@@ -1,4 +1,4 @@
-package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment;
+package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios;
 
 import java.util.Comparator;
 
@@ -11,11 +11,11 @@ import java.util.Comparator;
  * @author Julien Malvot
  *
  */
-public class ScpDSComponentOSLatencyDataComparator implements Comparator<ScpDSComponentOSLatencyData> {
+public class ScpLatencyDataComparator implements Comparator<ScpLatencyData> {
 
 	@Override
-	public int compare(ScpDSComponentOSLatencyData o1,
-			ScpDSComponentOSLatencyData o2) {
+	public int compare(ScpLatencyData o1,
+			ScpLatencyData o2) {
 		return Long.compare(o1.cache, o2.cache);
 	}
 }

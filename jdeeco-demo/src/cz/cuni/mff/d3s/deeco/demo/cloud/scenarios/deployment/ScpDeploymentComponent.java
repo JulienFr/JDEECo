@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ENetworkId;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ScpLatencyData;
 import cz.cuni.mff.d3s.deeco.knowledge.Component;
 
 /**
@@ -21,14 +22,14 @@ import cz.cuni.mff.d3s.deeco.knowledge.Component;
  * @author Julien Malvot
  * 
  */
-public class ScpDSComponent extends Component {
+public class ScpDeploymentComponent extends Component {
 	
 	public final static long serialVersionUID = 1L;
 	
 	/** network id where the component is running */
 	public ENetworkId networkId;
 	/** os latency data with cached list of latencies between the component and other components */
-	public Map<String, ScpDSComponentOSLatencyData> latencies;
+	public Map<String, ScpLatencyData> latencies;
 	/** ids of the application nodes processed by the component */
 	public List<String> onAppIds;
 	
@@ -37,10 +38,10 @@ public class ScpDSComponent extends Component {
 	 * @param networkId the network id of the Scp component among the cloud including different networks
 	 * @see EScenarioNetworkId
 	 */
-	public ScpDSComponent(String id, ENetworkId networkId) {
+	public ScpDeploymentComponent(String id, ENetworkId networkId) {
 		this.id = id;
 		this.networkId = networkId;
-		this.latencies = new HashMap<String, ScpDSComponentOSLatencyData>();
+		this.latencies = new HashMap<String, ScpLatencyData>();
 		this.onAppIds = new ArrayList<String>();
 	}
 }

@@ -9,7 +9,7 @@ import cz.cuni.mff.d3s.deeco.annotations.InOut;
 import cz.cuni.mff.d3s.deeco.annotations.PeriodicScheduling;
 import cz.cuni.mff.d3s.deeco.annotations.Process;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.Snapshot;
-import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.AppDSComponent;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.AppDeploymentComponent;
 import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
 
 /**
@@ -23,7 +23,7 @@ import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
  * @author Julien Malvot
  * 
  */
-public class AppSSComponent extends AppDSComponent {
+public class AppShutdownComponent extends AppDeploymentComponent {
 	
 	public final static long serialVersionUID = 1L;
 
@@ -36,7 +36,7 @@ public class AppSSComponent extends AppDSComponent {
 	/**constructor for the Application Component
 	 * @param id
 	 */
-	public AppSSComponent(String id, String machineId) {
+	public AppShutdownComponent(String id, String machineId) {
 		super(id);
 		this.machineId = machineId;
 		this.buScpId = null;

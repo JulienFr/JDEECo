@@ -9,6 +9,7 @@ import cz.cuni.mff.d3s.deeco.annotations.Membership;
 import cz.cuni.mff.d3s.deeco.annotations.Out;
 import cz.cuni.mff.d3s.deeco.annotations.PeriodicScheduling;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ENetworkId;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ScpLoadData;
 import cz.cuni.mff.d3s.deeco.ensemble.Ensemble;
 import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
 import cz.cuni.mff.d3s.spl.core.Formula;
@@ -27,7 +28,7 @@ import cz.cuni.mff.d3s.spl.formula.SimpleFormulas;
  * @author Julien Malvot
  * 
  */
-public class BalanceHSEnsemble extends Ensemble {
+public class HighloadEnsemble extends Ensemble {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -39,7 +40,7 @@ public class BalanceHSEnsemble extends Ensemble {
 			@In("coord.isDeployed") Boolean cIsDeployed,
 			// ScpComponent member
 			@In("member.id") String mId,
-			@In("member.osLoadData") ScpHSComponentOSLoadData osLoadData
+			@In("member.osLoadData") ScpLoadData osLoadData
 			) { 
 		if (cIsDeployed && cOnScpId.equals(mId)){
 			// high load for higher than 50%
@@ -78,7 +79,7 @@ public class BalanceHSEnsemble extends Ensemble {
 		onAppIds.value.remove(cId);
 		System.out.println(mId + " detaching " + cId);
 		// spawn a new component into the runtime
-		ScpHSComponent newScpComponent = new ScpHSComponent(newScpId, networkId);
+		ScpHighloadComponent newScpComponent = new ScpHighloadComponent(newScpId, networkId);
 		newScpComponent.machineId = machineId;
 		newScpComponent.onAppIds.add(cId);
 		// latencies generated between the node and the others
@@ -87,7 +88,7 @@ public class BalanceHSEnsemble extends Ensemble {
 		//LatencyGenerator.generate(newScpComponent, LocalLauncherHSNoJPF.scpComponents, 80, false);
 		// the spawn includes 
 		try {
-			LocalLauncherHSNoJPF.dynamicRuntime.registerComponent(newScpComponent);
+			LocalLauncherHighloadNoJPF.dynamicRuntime.registerComponent(newScpComponent);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -1,4 +1,4 @@
-package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.highload;
+package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios;
 
 import java.util.Random;
 
@@ -15,14 +15,14 @@ import cz.cuni.mff.d3s.spl.core.StatisticSnapshot;
  * @author Julien Malvot
  * 
  */
-public class ScpHSComponentOSLoadData extends Knowledge implements Data {
+public class ScpLoadData extends Knowledge implements Data {
 	
 	public Double max;
 	
-	public ScpHSComponentOSLoadData() {
+	public ScpLoadData() {
 	}
 	
-	public ScpHSComponentOSLoadData(Double max) {
+	public ScpLoadData(Double max) {
 		this.max = max;
 	}
 	

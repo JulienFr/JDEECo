@@ -1,10 +1,11 @@
-package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios;
+package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment;
 
 import cz.cuni.mff.d3s.deeco.annotations.In;
 import cz.cuni.mff.d3s.deeco.annotations.InOut;
 import cz.cuni.mff.d3s.deeco.annotations.Out;
 import cz.cuni.mff.d3s.deeco.annotations.PeriodicScheduling;
 import cz.cuni.mff.d3s.deeco.annotations.Process;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.AppBalancer;
 import cz.cuni.mff.d3s.deeco.knowledge.Component;
 import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
 
@@ -18,7 +19,7 @@ import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
  * @author Julien Malvot
  * 
  */
-public class AppBDSComponent extends Component {
+public class AppBalanceDeploymentComponent extends Component {
 	
 	public final static long serialVersionUID = 1L;
 
@@ -32,7 +33,7 @@ public class AppBDSComponent extends Component {
 	/** constructor for the Application Component
 	 * @param id
 	 */
-	public AppBDSComponent(String id) {
+	public AppBalanceDeploymentComponent(String id) {
 		this.id = id;
 		this.onScpId = null;
 		this.machineId = null;
@@ -43,7 +44,7 @@ public class AppBDSComponent extends Component {
 	 * with a supplied balancer
 	 * @param id
 	 */
-	public AppBDSComponent(String id, AppBalancer balancer) {
+	public AppBalanceDeploymentComponent(String id, AppBalancer balancer) {
 		this.id = id;
 		this.onScpId = null;
 		this.machineId = null;

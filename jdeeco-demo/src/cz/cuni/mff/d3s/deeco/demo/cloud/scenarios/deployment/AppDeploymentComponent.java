@@ -12,7 +12,7 @@ import cz.cuni.mff.d3s.deeco.knowledge.Component;
  * @author Julien Malvot
  * 
  */
-public class AppDSComponent extends Component {
+public class AppDeploymentComponent extends Component {
 	
 	public final static long serialVersionUID = 1L;
 
@@ -26,7 +26,7 @@ public class AppDSComponent extends Component {
 	/** constructor for the Application Component
 	 * @param id
 	 */
-	public AppDSComponent(String id) {
+	public AppDeploymentComponent(String id) {
 		this.id = id;
 		this.onScpId = null;
 		this.machineId = null;

@@ -21,7 +21,7 @@ import cz.cuni.mff.d3s.deeco.scheduling.Scheduler;
  * @author Julien Malvot
  * 
  */
-public class LocalLauncherSSNoJPF {
+public class LocalLauncherShutdownNoJPF {
 
 	/**
 	 * 
@@ -33,28 +33,28 @@ public class LocalLauncherSSNoJPF {
 		Scheduler scheduler = new MultithreadedScheduler();
 		Runtime rt = new Runtime(km, scheduler);
 		List<Class<?>> ensembles = Arrays.asList(new Class<?>[] { 
-				DeploySSEnsemble.class,
-				BackupSSEnsemble.class, 
-				MonitorSSEnsemble.class
+				DeployShutdownEnsemble.class,
+				BackupShutdownEnsemble.class, 
+				MonitorShutdownEnsemble.class
 		});
 		
 		List<Component> scpComponents = new ArrayList<Component>(Arrays.asList(
 				// 3 SCPis at the LMU Munich
-				new ScpSSComponent("LMU1", ENetworkId.LMU_MUNICH, Arrays.asList(2400, 2400)),
-				new ScpSSComponent("LMU2", ENetworkId.LMU_MUNICH, Arrays.asList(2200, 2200)),
-				new ScpSSComponent("LMU3", ENetworkId.LMU_MUNICH, Arrays.asList(1600, 1600)),
+				new ScpShutdownComponent("LMU1", ENetworkId.LMU_MUNICH, Arrays.asList(2400, 2400)),
+				new ScpShutdownComponent("LMU2", ENetworkId.LMU_MUNICH, Arrays.asList(2200, 2200)),
+				new ScpShutdownComponent("LMU3", ENetworkId.LMU_MUNICH, Arrays.asList(1600, 1600)),
 				// 3 SCPis at the IMT Lucca
-				new ScpSSComponent("IMT1", ENetworkId.IMT_LUCCA, Arrays.asList(2400, 2400)),
-				new ScpSSComponent("IMT2", ENetworkId.IMT_LUCCA, Arrays.asList(2200, 2200)),
-				new ScpSSComponent("IMT3", ENetworkId.IMT_LUCCA, Arrays.asList(1600, 1600)),
+				new ScpShutdownComponent("IMT1", ENetworkId.IMT_LUCCA, Arrays.asList(2400, 2400)),
+				new ScpShutdownComponent("IMT2", ENetworkId.IMT_LUCCA, Arrays.asList(2200, 2200)),
+				new ScpShutdownComponent("IMT3", ENetworkId.IMT_LUCCA, Arrays.asList(1600, 1600)),
 				// 1 SCPi in the English Garden (mobile device)
-				new ScpSSComponent("EGM1", ENetworkId.EN_GARDEN, Arrays.asList(800)))
+				new ScpShutdownComponent("EGM1", ENetworkId.EN_GARDEN, Arrays.asList(800)))
 		);
 		// list of all components which are part of the system
 		List<Component> cloudComponents = new ArrayList<Component>(
 				scpComponents);
 		// Singleton Instance experiencing high load with a machine running on IMT Lucca
-		cloudComponents.add(new AppSSComponent("APP", "machine"));
+		cloudComponents.add(new AppShutdownComponent("APP", "machine"));
 		// generate the latencies on the scp components
 		LatencyGenerator.generate(scpComponents, true);
 		// initialize the DEECo with input initialized components

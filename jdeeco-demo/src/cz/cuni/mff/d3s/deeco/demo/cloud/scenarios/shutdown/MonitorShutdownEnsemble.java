@@ -27,7 +27,7 @@ import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
  * @author Julien Malvot
  * 
  */
-public class MonitorSSEnsemble extends Ensemble {
+public class MonitorShutdownEnsemble extends Ensemble {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -109,7 +109,7 @@ public class MonitorSSEnsemble extends Ensemble {
 		while (buSelectCount < range && buIndex < buIds.size()){
 			Integer scpBuIndex = scpIds.indexOf(buIds.get(buIndex));
 			// the backup node must respect the SLA (2x(f>=2Ghz) cpu cores)
-			if (!buIsDown.get(buIndex) && !scpSelectors.get(scpBuIndex) && !scpIsDown.get(scpBuIndex) && DeploySSEnsemble.respectSLAScpCores(cores.get(buIndex))){
+			if (!buIsDown.get(buIndex) && !scpSelectors.get(scpBuIndex) && !scpIsDown.get(scpBuIndex) && DeployShutdownEnsemble.respectSLAScpCores(cores.get(buIndex))){
 				buSelectCount++;
 				buSelectors.set(buIndex, true);
 			}

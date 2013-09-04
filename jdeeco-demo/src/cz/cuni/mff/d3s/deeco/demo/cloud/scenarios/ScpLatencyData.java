@@ -1,4 +1,4 @@
-package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment;
+package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios;
 
 import java.util.Random;
 
@@ -15,7 +15,7 @@ import cz.cuni.mff.d3s.spl.core.StatisticSnapshot;
  * @author Julien Malvot
  * 
  */
-public class ScpDSComponentOSLatencyData extends Knowledge implements Data {
+public class ScpLatencyData extends Knowledge implements Data {
 	
 	/** id of one extremity of the latency link */	
 	public String id1;
@@ -28,10 +28,10 @@ public class ScpDSComponentOSLatencyData extends Knowledge implements Data {
 	/** max possible latency value */
 	public Long max;
 	
-	public ScpDSComponentOSLatencyData() {
+	public ScpLatencyData() {
 	}
 	
-	public ScpDSComponentOSLatencyData(String id1, String id2, Long min, Long max) {
+	public ScpLatencyData(String id1, String id2, Long min, Long max) {
 		this.id1 = id1;
 		this.id2 = id2;
 		this.min = min;
@@ -89,8 +89,8 @@ public class ScpDSComponentOSLatencyData extends Knowledge implements Data {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof ScpDSComponentOSLatencyData){
-			ScpDSComponentOSLatencyData toCompare = (ScpDSComponentOSLatencyData) obj;
+		if(obj instanceof ScpLatencyData){
+			ScpLatencyData toCompare = (ScpLatencyData) obj;
 			// same source id and destination id means equal latency data
 	        return (this.id1.equals(toCompare.id1) && this.id2.equals(toCompare.id2));
 	    }

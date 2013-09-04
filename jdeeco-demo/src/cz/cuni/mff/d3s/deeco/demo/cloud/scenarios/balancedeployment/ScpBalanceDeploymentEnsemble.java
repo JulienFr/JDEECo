@@ -1,4 +1,4 @@
-package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios;
+package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,9 +12,9 @@ import cz.cuni.mff.d3s.deeco.annotations.Membership;
 import cz.cuni.mff.d3s.deeco.annotations.Out;
 import cz.cuni.mff.d3s.deeco.annotations.PeriodicScheduling;
 import cz.cuni.mff.d3s.deeco.annotations.Selector;
-import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.ScpDSComponentOSLatencyData;
-import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.ScpDSComponentOSLatencyDataComparator;
-import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.shutdown.DeploySSEnsemble;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ScpLatencyData;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ScpLatencyDataComparator;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.shutdown.DeployShutdownEnsemble;
 import cz.cuni.mff.d3s.deeco.ensemble.Ensemble;
 import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
 
@@ -29,7 +29,7 @@ import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
  * @author Julien Malvot
  * 
  */
-public class ScpBalanceEnsemble extends Ensemble {
+public class ScpBalanceDeploymentEnsemble extends Ensemble {
 
 	private static final long serialVersionUID = 1L;
 

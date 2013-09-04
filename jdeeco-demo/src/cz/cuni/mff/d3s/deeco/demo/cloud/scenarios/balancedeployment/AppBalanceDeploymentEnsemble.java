@@ -1,4 +1,4 @@
-package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios;
+package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import cz.cuni.mff.d3s.deeco.annotations.Out;
 import cz.cuni.mff.d3s.deeco.annotations.PeriodicScheduling;
 import cz.cuni.mff.d3s.deeco.ensemble.Ensemble;
 
-public class AppBalanceEnsemble extends Ensemble {
+public class AppBalanceDeploymentEnsemble extends Ensemble {
 
 	private static final long serialVersionUID = 1L;
 

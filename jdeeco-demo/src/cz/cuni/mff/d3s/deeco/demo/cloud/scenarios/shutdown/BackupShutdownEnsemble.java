@@ -20,7 +20,7 @@ import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
  * 
  * @author Julien Malvot
  */
-public class BackupSSEnsemble extends Ensemble {
+public class BackupShutdownEnsemble extends Ensemble {
 
 	private static final long serialVersionUID = 1L;
 	

@@ -23,7 +23,7 @@ import cz.cuni.mff.d3s.deeco.scheduling.Scheduler;
  * @author Julien Malvot
  * 
  */
-public class LocalLauncherHSNoJPF {
+public class LocalLauncherHighloadNoJPF {
 
 	public static DynamicRuntime dynamicRuntime = null;
 	/**
@@ -38,18 +38,18 @@ public class LocalLauncherHSNoJPF {
 		// the dynamic runtime enables the developper to register/unregister components at runtime
 		dynamicRuntime = new DynamicRuntime(km, scheduler);
 
-		AppHSComponent appComponent = new AppHSComponent("APP", "machine", "IMT1", true);
-		ArrayList<ScpHSComponent> scpComponents = new ArrayList<ScpHSComponent>(Arrays.asList(
+		AppHighloadComponent appComponent = new AppHighloadComponent("APP", "machine", "IMT1", true);
+		ArrayList<ScpHighloadComponent> scpComponents = new ArrayList<ScpHighloadComponent>(Arrays.asList(
 				// 3 SCPis at the LMU Munich
-				new ScpHSComponent("LMU1", ENetworkId.LMU_MUNICH),
-				new ScpHSComponent("LMU2", ENetworkId.LMU_MUNICH),
-				new ScpHSComponent("LMU3", ENetworkId.LMU_MUNICH),
+				new ScpHighloadComponent("LMU1", ENetworkId.LMU_MUNICH),
+				new ScpHighloadComponent("LMU2", ENetworkId.LMU_MUNICH),
+				new ScpHighloadComponent("LMU3", ENetworkId.LMU_MUNICH),
 				// 3 SCPis at the IMT Lucca
-				new ScpHSComponent("IMT1", ENetworkId.IMT_LUCCA, Arrays.asList(appComponent.id) ),
-				new ScpHSComponent("IMT2", ENetworkId.IMT_LUCCA),
-				new ScpHSComponent("IMT3", ENetworkId.IMT_LUCCA),
+				new ScpHighloadComponent("IMT1", ENetworkId.IMT_LUCCA, Arrays.asList(appComponent.id) ),
+				new ScpHighloadComponent("IMT2", ENetworkId.IMT_LUCCA),
+				new ScpHighloadComponent("IMT3", ENetworkId.IMT_LUCCA),
 
-				new ScpHSComponent("EGM1", ENetworkId.EN_GARDEN)));
+				new ScpHighloadComponent("EGM1", ENetworkId.EN_GARDEN)));
 		// list of all components which are part of the system
 		List<Component> cloudComponents = new ArrayList<Component>(
 				scpComponents);
@@ -58,7 +58,7 @@ public class LocalLauncherHSNoJPF {
 
 		// initialize the DEECo with input initialized components
 		DEECoObjectProvider dop = new DEECoObjectProvider();
-		dop.addEnsemble(BalanceHSEnsemble.class);
+		dop.addEnsemble(HighloadEnsemble.class);
 		dop.addInitialKnowledge(cloudComponents);
 		
 		dynamicRuntime.registerComponentsAndEnsembles(dop);

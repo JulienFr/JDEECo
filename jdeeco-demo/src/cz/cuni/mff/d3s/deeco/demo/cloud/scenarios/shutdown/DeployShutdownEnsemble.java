@@ -11,8 +11,8 @@ import cz.cuni.mff.d3s.deeco.annotations.Membership;
 import cz.cuni.mff.d3s.deeco.annotations.Out;
 import cz.cuni.mff.d3s.deeco.annotations.PeriodicScheduling;
 import cz.cuni.mff.d3s.deeco.annotations.Selector;
-import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.DeployDSEnsemble;
-import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.ScpDSComponentOSLatencyData;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ScpLatencyData;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.DeploymentEnsemble;
 import cz.cuni.mff.d3s.deeco.ensemble.Ensemble;
 import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
 
@@ -26,7 +26,7 @@ import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
  * @author Julien Malvot
  * 
  */
-public class DeploySSEnsemble extends Ensemble {
+public class DeployShutdownEnsemble extends Ensemble {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -45,20 +45,20 @@ public class DeploySSEnsemble extends Ensemble {
 		return (!mId.equals(cId) && ((cMachineId == null && mMachineId == null) || cMachineId.equals(mMachineId)));
 	}
 	
-	private static List<ScpDSComponentOSLatencyData> scpSelectLatenciesFromSLA(List<Map<String, ScpDSComponentOSLatencyData>> scpLatencies, List<List<Integer>> scpCores){
+	private static List<ScpLatencyData> scpSelectLatenciesFromSLA(List<Map<String, ScpLatencyData>> scpLatencies, List<List<Integer>> scpCores){
 		// transforming the List<Map> data structure into a List data structure
-		List<ScpDSComponentOSLatencyData> mLatencies = new ArrayList<ScpDSComponentOSLatencyData> ();
+		List<ScpLatencyData> mLatencies = new ArrayList<ScpLatencyData> ();
 		for (int i = 0; i < scpLatencies.size(); i++){
 			List<Integer> cores = scpCores.get(i);
 			// if at least two-gigahertz frequency cores
 			if (respectSLAScpCores(cores)){
 				// get the ids which the scp is linked to
-				Map<String,ScpDSComponentOSLatencyData> map = scpLatencies.get(i);
+				Map<String,ScpLatencyData> map = scpLatencies.get(i);
 				Object[] toIdSet = scpLatencies.get(i).keySet().toArray();
 				// iterate over all the link destinations
 				for (int j = 0; j < toIdSet.length; j++){
 					// get the latency
-					ScpDSComponentOSLatencyData latencyData = map.get((Object)toIdSet[j]);
+					ScpLatencyData latencyData = map.get((Object)toIdSet[j]);
 					// if the latency respects the Service Level Agreement max latency of the source
 					// do not add a latency data which is already existing in the list
 					if (latencyData.cache <= 50 && !mLatencies.contains(latencyData)){
@@ -106,7 +106,7 @@ public class DeploySSEnsemble extends Ensemble {
 			// ScpComponent members
 			@Selector("scp") List<Boolean> scpSelectors,
 			@In("members.scp.id") List<String> scpIds,
-			@In("members.scp.latencies") List<Map<String, ScpDSComponentOSLatencyData>> scpLatencies,
+			@In("members.scp.latencies") List<Map<String, ScpLatencyData>> scpLatencies,
 			@In("members.scp.isDown") List<Boolean> IsDown,
 			@In("members.scp.cores") List<List<Integer>> scpCores,
 			
@@ -124,9 +124,9 @@ public class DeploySSEnsemble extends Ensemble {
 				appsSelectors.set(i, appSelection(appId, appMachineId, appsIds.get(i), appsMachineIds.get(i))); 
 			}
 			// select the latencies based on the SLA
-			List<ScpDSComponentOSLatencyData> slaSelectedLatencies = scpSelectLatenciesFromSLA(scpLatencies, scpCores);
+			List<ScpLatencyData> slaSelectedLatencies = scpSelectLatenciesFromSLA(scpLatencies, scpCores);
 			// scp selection
-			DeployDSEnsemble.scpSelection(scpSelectors, scpIds, slaSelectedLatencies, appsIds.size());
+			DeploymentEnsemble.scpSelection(scpSelectors, scpIds, slaSelectedLatencies, appsIds.size());
 			// bu selection (backup components)
 			buSelection(buSelectors, buIds, buCores, scpSelectors, scpIds, appsIds.size());
 			// accept the deployment with the selected ids

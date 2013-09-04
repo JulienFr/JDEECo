@@ -11,7 +11,7 @@ import cz.cuni.mff.d3s.deeco.annotations.Process;
 import cz.cuni.mff.d3s.deeco.annotations.TriggerOnChange;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ENetworkId;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.Snapshot;
-import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.ScpDSComponent;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.ScpDeploymentComponent;
 import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
 
 /**
@@ -30,7 +30,7 @@ import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
  * @author Julien Malvot
  * 
  */
-public class ScpSSComponent extends ScpDSComponent {
+public class ScpShutdownComponent extends ScpDeploymentComponent {
 
 	public final static long serialVersionUID = 1L;
 
@@ -53,7 +53,7 @@ public class ScpSSComponent extends ScpDSComponent {
 	 *            different networks
 	 * @see EScenarioNetworkId
 	 */
-	public ScpSSComponent(String id, ENetworkId networkId, List<Integer> cores) {
+	public ScpShutdownComponent(String id, ENetworkId networkId, List<Integer> cores) {
 		super(id, networkId);
 		
 		this.moScpIds = new ArrayList<String>();

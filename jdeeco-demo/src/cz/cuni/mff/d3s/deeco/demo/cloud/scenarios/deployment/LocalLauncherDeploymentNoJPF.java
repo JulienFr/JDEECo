@@ -16,16 +16,13 @@ import cz.cuni.mff.d3s.deeco.scheduling.MultithreadedScheduler;
 import cz.cuni.mff.d3s.deeco.scheduling.Scheduler;
 
 /**
- * The Science Cloud Platform (Scp) local launcher for the complex Deployment Scenario (DS).
- * 
- * The launcher is the same as the non-complex deployment scenario local launcher,
- * but with more scp nodes and app nodes to test the robustness of the ensemble.
+ * The Science Cloud Platform (Scp) local launcher for the Deployment Scenario (DS).
  * 
  * @author Julien Malvot
  * 
  */
-public class LocalLauncherComplexDSNoJPF {
-
+public class LocalLauncherDeploymentNoJPF {
+	
 	/**
 	 * 
 	 * @param args
@@ -39,38 +36,25 @@ public class LocalLauncherComplexDSNoJPF {
 		List<Component> scpComponents = new ArrayList<Component>( 
 			Arrays.asList(
 				// 3 SCPis at the LMU Munich 
-				new ScpDSComponent("LMU1", ENetworkId.LMU_MUNICH),
-				new ScpDSComponent("LMU2", ENetworkId.LMU_MUNICH),
-				new ScpDSComponent("LMU3", ENetworkId.LMU_MUNICH),
-				new ScpDSComponent("LMU4", ENetworkId.LMU_MUNICH),
-				new ScpDSComponent("LMU5", ENetworkId.LMU_MUNICH),
-				new ScpDSComponent("LMU6", ENetworkId.LMU_MUNICH),
-				new ScpDSComponent("LMU7", ENetworkId.LMU_MUNICH),
+				new ScpDeploymentComponent("LMU1", ENetworkId.LMU_MUNICH),
+				new ScpDeploymentComponent("LMU2", ENetworkId.LMU_MUNICH),
+				new ScpDeploymentComponent("LMU3", ENetworkId.LMU_MUNICH),
 				// 3 SCPis at the IMT Lucca
-				new ScpDSComponent("IMT1", ENetworkId.IMT_LUCCA),
-				new ScpDSComponent("IMT2", ENetworkId.IMT_LUCCA),
-				new ScpDSComponent("IMT3", ENetworkId.IMT_LUCCA),
-				new ScpDSComponent("IMT4", ENetworkId.IMT_LUCCA),
-				new ScpDSComponent("IMT5", ENetworkId.IMT_LUCCA),
-				new ScpDSComponent("IMT6", ENetworkId.IMT_LUCCA),
-				new ScpDSComponent("IMT7", ENetworkId.IMT_LUCCA),
-				// 
-				new ScpDSComponent("EGM1", ENetworkId.EN_GARDEN),
-				new ScpDSComponent("EGM2", ENetworkId.EN_GARDEN),
-				new ScpDSComponent("EGM3", ENetworkId.EN_GARDEN))
+				new ScpDeploymentComponent("IMT1", ENetworkId.IMT_LUCCA),
+				new ScpDeploymentComponent("IMT2", ENetworkId.IMT_LUCCA),
+				new ScpDeploymentComponent("IMT3", ENetworkId.IMT_LUCCA),
+				new ScpDeploymentComponent("EGM1", ENetworkId.EN_GARDEN))
 		);
 		// list of all components which are part of the system
 		List<Component> cloudComponents = new ArrayList<Component>(scpComponents);	
 		// 2 Application Instances to be deployed in the cloud
-		cloudComponents.add(new AppDSComponent("APP1"));
-		cloudComponents.add(new AppDSComponent("APP2"));
-		cloudComponents.add(new AppDSComponent("APP3"));
-		cloudComponents.add(new AppDSComponent("APP4"));
+		cloudComponents.add(new AppDeploymentComponent("APP1"));
+		cloudComponents.add(new AppDeploymentComponent("APP2"));
 		// generate the latencies on the scp components
-		LatencyGenerator.generate(scpComponents, true);
+		LatencyGenerator.generate(scpComponents, true);	
 		// initialize the DEECo with input initialized components
 		DEECoObjectProvider dop = new DEECoObjectProvider();
-		dop.addEnsemble(DeployDSEnsemble.class);
+		dop.addEnsemble(DeploymentEnsemble.class);
 		dop.addInitialKnowledge(cloudComponents);
 		rt.registerComponentsAndEnsembles(dop);
 	
