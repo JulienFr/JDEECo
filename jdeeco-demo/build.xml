@@ -93,6 +93,21 @@
 		</java>
 	</target>
 	
+	<!-- start deployment cloud scenario (with balancer) demo with local shared memory -->
+	<target name="cloud-local-scenario-balancer-deployment" description="Runs the deployment cloud scenario demo">
+		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.LocalLauncherBDSNoJPF" fork="true">
+			<classpath>
+				<pathelement location="${dist}/cloud.jar"/>
+				<pathelement location="${dist}/jdeeco.jar"/>
+				<pathelement location="${river}/lib/jsk-lib.jar"/>
+				<pathelement location="${river}/lib/jsk-platform.jar"/>
+				<pathelement location="${spl}"/>
+			</classpath>
+			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
+			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
+		</java>
+	</target>
+		
 	<!-- start deployment cloud scenario demo with local shared memory -->
 	<target name="cloud-local-scenario-deployment" description="Runs the deployment cloud scenario demo">
 		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.LocalLauncherDSNoJPF" fork="true">
