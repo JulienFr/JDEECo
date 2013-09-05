@@ -17,7 +17,7 @@ import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.shutdown.DeployShutdownEnsembl
 import cz.cuni.mff.d3s.deeco.ensemble.Ensemble;
 import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
 
-public class FilterScpBalanceDeploymentEnsemble extends Ensemble {
+public class SelectScpComponentsEnsemble extends Ensemble {
 	
 	private static List<ScpLatencyData> scpSelectLatenciesFromSLA(List<Map<String, ScpLatencyData>> scpLatencies){
 		// transforming the List<Map> data structure into a List data structure

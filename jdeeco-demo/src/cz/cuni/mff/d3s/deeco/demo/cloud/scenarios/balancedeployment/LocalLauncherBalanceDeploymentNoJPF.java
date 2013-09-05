@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.AppBalancer;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ENetworkId;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.LatencyGenerator;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.ScpDeploymentComponent;
@@ -52,15 +51,13 @@ public class LocalLauncherBalanceDeploymentNoJPF {
 		// 2 Application Instances to be deployed in the cloud
 		List<String> ids = Arrays.asList("APP1", "APP2");
 		// injects the balancer role to the application 1 w.r.t. the other application component APP2
-		cloudComponents.add(new AppBalanceDeploymentComponent("APP1", new AppBalancer(ids)));
+		cloudComponents.add(new AppBalanceDeploymentComponent("APP1", new AppDeploymentBalancer(ids)));
 		cloudComponents.add(new AppBalanceDeploymentComponent("APP2"));
 		// generate the latencies on the scp components
 		LatencyGenerator.generate(scpComponents, true);	
 		// initialize the DEECo with input initialized components
 		DEECoObjectProvider dop = new DEECoObjectProvider();
-		dop.addEnsemble(ScpBalanceDeploymentEnsemble.class);
-		dop.addEnsemble(AppBalanceDeploymentEnsemble.class);
-		dop.addEnsemble(FilterScpBalanceDeploymentEnsemble.class);
+		dop.addEnsemble(SelectScpComponentsEnsemble.class);
 		dop.addInitialKnowledge(cloudComponents);
 		rt.registerComponentsAndEnsembles(dop);
 	
