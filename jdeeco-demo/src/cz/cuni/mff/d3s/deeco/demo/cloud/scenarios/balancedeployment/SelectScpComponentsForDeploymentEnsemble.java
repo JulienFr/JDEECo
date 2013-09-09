@@ -17,7 +17,7 @@ import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.shutdown.DeployShutdownEnsembl
 import cz.cuni.mff.d3s.deeco.ensemble.Ensemble;
 import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
 
-public class SelectScpComponentsEnsemble extends Ensemble {
+public class SelectScpComponentsForDeploymentEnsemble extends Ensemble {
 	
 	private static List<ScpLatencyData> scpSelectLatenciesFromSLA(List<Map<String, ScpLatencyData>> scpLatencies){
 		// transforming the List<Map> data structure into a List data structure
@@ -138,7 +138,7 @@ public class SelectScpComponentsEnsemble extends Ensemble {
 		
 		String scpComponentIds = msScpIds.get(0);
 		// linkage
-		for (int i = 1; i < msScpIds.size(); i++){
+		for (Integer i = 1; i < msScpIds.size(); i++){
 			scpComponentIds += " " + msScpIds.get(i);
 		}
 		System.out.println("The application (balancer) coordinator "+appId +  

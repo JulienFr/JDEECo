@@ -77,7 +77,7 @@ public class LocalLauncherComplexBalanceDeploymentNoJPF {
 		LatencyGenerator.generate(scpComponents, true);
 		// initialize the DEECo with input initialized components
 		DEECoObjectProvider dop = new DEECoObjectProvider();
-		dop.addEnsemble(SelectScpComponentsEnsemble.class);
+		dop.addEnsemble(SelectScpComponentsForDeploymentEnsemble.class);
 		dop.addInitialKnowledge(cloudComponents);
 		rt.registerComponentsAndEnsembles(dop);
 	

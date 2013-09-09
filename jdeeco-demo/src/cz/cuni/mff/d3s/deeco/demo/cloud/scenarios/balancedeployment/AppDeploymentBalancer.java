@@ -17,7 +17,7 @@ public class AppDeploymentBalancer extends Knowledge {
 	 */
 	public List<String> scpIds;
 	/**
-	 * List of ids of the application parts per scp nodes
+	 * List of ids of the scp nodes per application parts
 	 * which gets populated when the whole application gets deployed
 	 * via the balancer
 	 */
@@ -43,5 +43,27 @@ public class AppDeploymentBalancer extends Knowledge {
 		this.scpIds = new ArrayList<String> ();
 		this.scpAppIds = new ArrayList<List<String>> ();
 		this.isAppDeployed = false;
+	}
+	
+	public void deploy(){
+		// all AppComponents are now deployed by ScpComponents
+		isAppDeployed = true;
+		Integer appSize = appIds.size();
+		Integer scpSize = scpIds.size();
+		// populates initial lists in the scpAppIds
+		for (Integer i = 0; i < scpSize; i++)
+			scpAppIds.add(new ArrayList<String> ());
+		// distributes the application parts on the scp nodes
+		for (Integer i = 0; i < appSize; i++){
+			String appId = appIds.get(i);
+			Integer scpIndex = i;
+			// more scp nodes than application parts, add one app part per node
+			if (appSize > scpSize){
+				scpIndex %= scpSize;
+			}
+			scpAppIds.get(scpIndex).add(appId);
+			// print info
+			System.out.println("Application part "+ appId + " deployed on " + scpIds.get(scpIndex));	
+		}
 	}
 }

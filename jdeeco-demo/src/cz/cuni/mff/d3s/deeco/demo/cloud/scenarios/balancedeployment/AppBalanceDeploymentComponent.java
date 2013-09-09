@@ -47,25 +47,7 @@ public class AppBalanceDeploymentComponent extends Component {
 			@InOut("balancer") OutWrapper<AppDeploymentBalancer> balancer) {
 		// if scp nodes have been selected
 		if (balancer.value != null && balancer.value.isAppDeployed != null && !balancer.value.isAppDeployed && !balancer.value.scpIds.isEmpty()){
-			// all AppComponents are now deployed by ScpComponents
-			balancer.value.isAppDeployed = true;
-			Integer appSize = balancer.value.appIds.size();
-			Integer scpSize = balancer.value.scpIds.size();
-			// populates initial lists in the scpAppIds
-			for (int i = 0; i < scpSize; i++)
-				balancer.value.scpAppIds.add(new ArrayList<String> ());
-			// distributes the application parts on the scp nodes
-			for (int i = 0; i < appSize; i++){
-				String appId = balancer.value.appIds.get(i);
-				Integer scpIndex = i;
-				// more scp nodes than application parts, add one app part per node
-				if (appSize > scpSize){
-					scpIndex %= scpSize;
-				}
-				balancer.value.scpAppIds.get(scpIndex).add(appId);
-				// print info
-				System.out.println("Application part "+ appId + " deployed on " + balancer.value.scpIds.get(scpIndex));	
-			}
+			balancer.value.deploy();
 		}
 	}
 	
