@@ -95,7 +95,52 @@
 	
 	<!-- start deployment cloud scenario (with balancer) demo with local shared memory -->
 	<target name="cloud-local-scenario-balancer-deployment" description="Runs the deployment cloud scenario demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.LocalLauncherBDSNoJPF" fork="true">
+		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.LocalLauncherBalanceDeploymentNoJPF" fork="true">
+			<classpath>
+				<pathelement location="${dist}/cloud.jar"/>
+				<pathelement location="${dist}/jdeeco.jar"/>
+				<pathelement location="${river}/lib/jsk-lib.jar"/>
+				<pathelement location="${river}/lib/jsk-platform.jar"/>
+				<pathelement location="${spl}"/>
+			</classpath>
+			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
+			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
+		</java>
+	</target>
+	
+	<!-- start the complex deployment cloud scenario (with balancer) demo with local shared memory -->
+	<target name="cloud-local-scenario-balancer-deployment-complex" description="Runs the deployment cloud scenario demo">
+		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.LocalLauncherComplexBalanceDeploymentNoJPF" fork="true">
+			<classpath>
+				<pathelement location="${dist}/cloud.jar"/>
+				<pathelement location="${dist}/jdeeco.jar"/>
+				<pathelement location="${river}/lib/jsk-lib.jar"/>
+				<pathelement location="${river}/lib/jsk-platform.jar"/>
+				<pathelement location="${spl}"/>
+			</classpath>
+			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
+			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
+		</java>
+	</target>
+	
+	<!-- start shutdown cloud scenario (with balancer) demo with local shared memory -->
+	<target name="cloud-local-scenario-balancer-shutdown" description="Runs the shutdown cloud scenario demo">
+		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown.LocalLauncherBalanceShutdownNoJPF" fork="true">
+			<classpath>
+				<pathelement location="${dist}/cloud.jar"/>
+				<pathelement location="${dist}/jdeeco.jar"/>
+				<pathelement location="${river}/lib/jsk-lib.jar"/>
+				<pathelement location="${river}/lib/jsk-platform.jar"/>
+				<pathelement location="${spl}"/>
+			</classpath>
+			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
+			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
+		</java>
+	</target>
+	
+	<!-- start the complex shutdown cloud scenario (with balancer) demo with local shared memory -->
+	<target name="cloud-local-scenario-balancer-shutdown-complex" description="Runs the shutdown cloud scenario demo">
+		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown.LocalLauncherComplexBalanceShutdownNoJPF" fork="true">
 			<classpath>
 				<pathelement location="${dist}/cloud.jar"/>
 				<pathelement location="${dist}/jdeeco.jar"/>
