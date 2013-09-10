@@ -17,6 +17,7 @@ import cz.cuni.mff.d3s.deeco.invokable.parameters.GenericParameter;
 import cz.cuni.mff.d3s.deeco.invokable.parameters.Parameter;
 import cz.cuni.mff.d3s.deeco.invokable.parameters.SelectorParameter;
 import cz.cuni.mff.d3s.deeco.knowledge.KnowledgePathHelper;
+import cz.cuni.mff.d3s.deeco.logging.Log;
 import cz.cuni.mff.d3s.deeco.path.grammar.KnowledgePath;
 import cz.cuni.mff.d3s.deeco.path.grammar.ParseException;
 
