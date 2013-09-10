@@ -17,4 +17,9 @@ public class PathGrammar {
 	 * Identifier used to describe an ensemble member group
 	 */
 	public static final String MEMBERS = "members";
+	
+	/**
+	 * Identifier used to describe a single ensemble member group
+	 */
+	public static final String MEMBERSET = "memberset";
 }

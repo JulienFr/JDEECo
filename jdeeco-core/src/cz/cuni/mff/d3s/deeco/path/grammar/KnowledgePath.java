@@ -59,6 +59,14 @@ public class KnowledgePath implements Serializable {
 	}
 	
 	/**
+	 * utility function for stating if the path is memberset-based
+	 * @return
+	 */
+	public Boolean isMembersetPath(){
+		return (EEnsembleParty.MEMBERSET.equals(pathNode.value));
+	}
+	
+	/**
 	 * check if the path is of the form "members.identifier.*" against the supplied identifier
 	 * this test function asserts if the path is well identified for a given group member identifier
 	 * @param identifier
@@ -66,6 +74,10 @@ public class KnowledgePath implements Serializable {
 	 */
 	public Boolean hasGroupId(String groupId){
 		return (EEnsembleParty.MEMBERS.equals(pathNode.value) && groupId.equals(pathNode.next.value));
+	}
+	
+	public Boolean hasMembersWithNoGroupId(){
+		return (EEnsembleParty.MEMBERS.equals(pathNode.value) && !(pathNode.next.value instanceof String));
 	}
 	
 	/**

@@ -16,6 +16,7 @@
 package cz.cuni.mff.d3s.deeco.invokable;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 
 import cz.cuni.mff.d3s.deeco.exceptions.EnsembleProcessInvocationException;
@@ -23,9 +24,8 @@ import cz.cuni.mff.d3s.deeco.exceptions.KMException;
 import cz.cuni.mff.d3s.deeco.exceptions.KMNotExistentException;
 import cz.cuni.mff.d3s.deeco.invokable.memberships.AbstractMembershipMethod;
 import cz.cuni.mff.d3s.deeco.invokable.memberships.MemberMembershipMethod;
-import cz.cuni.mff.d3s.deeco.invokable.memberships.MembersMembershipMethod;
-import cz.cuni.mff.d3s.deeco.invokable.parameters.Parameter;
-import cz.cuni.mff.d3s.deeco.invokable.parameters.SelectorParameter;
+import cz.cuni.mff.d3s.deeco.invokable.memberships.MembersetMembershipMethod;
+import cz.cuni.mff.d3s.deeco.invokable.memberships.SelectedMembersMembershipMethod;
 import cz.cuni.mff.d3s.deeco.knowledge.ConstantKeys;
 import cz.cuni.mff.d3s.deeco.knowledge.ISession;
 import cz.cuni.mff.d3s.deeco.knowledge.KnowledgeManager;
@@ -120,8 +120,7 @@ public class SchedulableEnsembleProcess extends SchedulableProcess {
 			Class<?> membershipReturnType = membership.method.getMethod().getReturnType();
 			String cId = null;
 			// for a member-based membership method, we test on coordinator-member pairs the validity of the association
-			if (MemberMembershipMethod.class.equals(membershipType) &&
-					(Boolean.class.equals(membershipReturnType) || boolean.class.equals(membershipReturnType))){
+			if (MemberMembershipMethod.class.equals(membershipType)){
 				String mId = null;
 				if (recipientMode.equals(ETriggerType.COORDINATOR)) {
 					cId = outerId;
@@ -159,8 +158,7 @@ public class SchedulableEnsembleProcess extends SchedulableProcess {
 					} 
 				}
 			// one coordinator and multi-member groups 
-			}else if (MembersMembershipMethod.class.equals(membershipType) &&
-					Boolean.class.isAssignableFrom(membershipReturnType)){
+			}else if (MembersetMembershipMethod.class.equals(membershipType) || SelectedMembersMembershipMethod.class.equals(membershipType)){
 				// the coordinator is the only trigger type
 				if (recipientMode.equals(ETriggerType.COORDINATOR)) {
 					cId = outerId;
@@ -168,29 +166,52 @@ public class SchedulableEnsembleProcess extends SchedulableProcess {
 					session.begin();
 					while (session.repeat()) {
 						try {
-							MembersMembershipMethod mms = (MembersMembershipMethod) membership;
+							AbstractMembershipMethod ams = (AbstractMembershipMethod) membership;
 							// if the coordinator is acceptable for the membership by prior duck-typing
-							if (isMembershipCoordinator(mms.method.in, mms.method.inOut, session, cId)){
-								// retrieved the different member groups by ids from the selectors and rootIds within the session
-								List<List<String>> memberGroups = getMemberGroups(mms.method.selectors, rootIds, session);
-								// retrieve the method parameters into a local object array
-								Object[] parametersMembership = getParameterMethodValues(mms.method.in, mms.method.inOut, mms.method.out, mms.method.selectors, 
-										session, cId, memberGroups);
-								// evaluate the membership
-								if ((Boolean) evaluateMembership(parametersMembership)) {
-									// get only the selected members from the user-modified selectors
-									memberGroups = getSelectedMemberGroups(mms.method.selectors, rootIds, memberGroups);
-									// knowledge exchange
-									ParameterizedSelectorMethod psm = (ParameterizedSelectorMethod) knowledgeExchange;
-									// populate first the selectors of the knowledge exchange which (compared to the membership) are implicit
-									//populateKnowledgeExchangeSelectors(psm.selectors)
-									Object[] parametersKnowledgeExchange = getParameterMethodValues(
-											psm.in, psm.inOut, psm.out, psm.selectors, session, cId, memberGroups);
-									evaluateKnowledgeExchange(parametersKnowledgeExchange);
-									// put the method values from the knowledge exchange into the knowledge repository
-									putParameterMethodValues(parametersKnowledgeExchange,
-											psm.inOut, psm.out, psm.selectors, session,
-											cId, memberGroups);
+							if (isMembershipCoordinator(ams.method.in, ams.method.inOut, session, cId)){
+								// if selectors are involved
+								if (SelectedMembersMembershipMethod.class.equals(membershipType)){
+									SelectedMembersMembershipMethod mms = (SelectedMembersMembershipMethod) membership;
+									// retrieved the different member groups by ids from the selectors and rootIds within the session
+									List<List<String>> memberGroups = getMemberGroups(mms.method.selectors, rootIds, session);
+									// retrieve the method parameters into a local object array
+									Object[] parametersMembership = getParameterMethodValues(mms.method.in, mms.method.inOut, mms.method.out, mms.method.selectors, 
+											session, cId, memberGroups);
+									// evaluate the membership
+									if ((Boolean) evaluateMembership(parametersMembership)) {
+										// get only the selected members from the user-modified selectors
+										memberGroups = getSelectedMemberGroups(mms.method.selectors, rootIds, memberGroups);
+										// knowledge exchange
+										ParameterizedSelectorMethod psm = (ParameterizedSelectorMethod) knowledgeExchange;
+										// populate first the selectors of the knowledge exchange which (compared to the membership) are implicit
+										//populateKnowledgeExchangeSelectors(psm.selectors)
+										Object[] parametersKnowledgeExchange = getParameterMethodValues(
+												psm.in, psm.inOut, psm.out, psm.selectors, session, cId, memberGroups);
+										evaluateKnowledgeExchange(parametersKnowledgeExchange);
+										// put the method values from the knowledge exchange into the knowledge repository
+										putParameterMethodValues(parametersKnowledgeExchange,
+												psm.inOut, psm.out, psm.selectors, session,
+												cId, memberGroups);		
+									}
+								// otherwise just one group of members
+								}else{
+									// narrows the parameters to the members-based ones
+									// get member group according to the input parameters
+									List<String> memberGroup = getGroupMembers(getMembersParameters(membership.method.in), cId, rootIds, session);
+									// retrieve the method parameters into a local object array
+									Object[] parametersMembership = getParameterMethodValues(
+											membership.method.in, membership.method.inOut,
+											membership.method.out, session, cId, memberGroup);
+									// if the membership returns a positive test
+									if ((Boolean)evaluateMembership(parametersMembership)) {
+										Object[] parametersKnowledgeExchange = getParameterMethodValues(
+												knowledgeExchange.in, knowledgeExchange.inOut,
+												knowledgeExchange.out, session, cId, memberGroup);
+										evaluateKnowledgeExchange(parametersKnowledgeExchange);
+										putParameterMethodValues(parametersKnowledgeExchange,
+												knowledgeExchange.inOut, knowledgeExchange.out, session,
+												cId, memberGroup);
+									}
 								}
 							}
 						} catch (KMNotExistentException kmnee) {

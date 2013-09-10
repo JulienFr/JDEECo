@@ -2,20 +2,23 @@ package cz.cuni.mff.d3s.deeco.processor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import cz.cuni.mff.d3s.deeco.annotations.In;
 import cz.cuni.mff.d3s.deeco.annotations.KnowledgeExchange;
 import cz.cuni.mff.d3s.deeco.annotations.Membership;
 import cz.cuni.mff.d3s.deeco.annotations.PeriodicScheduling;
+import cz.cuni.mff.d3s.deeco.annotations.Selector;
 import cz.cuni.mff.d3s.deeco.ensemble.Ensemble;
 import cz.cuni.mff.d3s.deeco.invokable.ParameterizedMethod;
 import cz.cuni.mff.d3s.deeco.invokable.ParameterizedSelectorMethod;
 import cz.cuni.mff.d3s.deeco.invokable.SchedulableEnsembleProcess;
 import cz.cuni.mff.d3s.deeco.invokable.memberships.AbstractMembershipMethod;
 import cz.cuni.mff.d3s.deeco.invokable.memberships.MemberMembershipMethod;
-import cz.cuni.mff.d3s.deeco.invokable.memberships.MembersMembershipMethod;
+import cz.cuni.mff.d3s.deeco.invokable.memberships.MembersetMembershipMethod;
+import cz.cuni.mff.d3s.deeco.invokable.memberships.SelectedMembersMembershipMethod;
 import cz.cuni.mff.d3s.deeco.knowledge.KnowledgeManager;
-import cz.cuni.mff.d3s.deeco.path.grammar.EEnsembleParty;
 import cz.cuni.mff.d3s.deeco.path.grammar.ParseException;
 import cz.cuni.mff.d3s.deeco.path.grammar.PathGrammar;
 import cz.cuni.mff.d3s.deeco.scheduling.ProcessPeriodicSchedule;
@@ -68,52 +71,81 @@ public class EnsembleParser {
 			throw new ParseException(
 					"Malformed membership function definition.");
 		}
+	
 		// check methodEnsMembership return types
 		Class<?> returnType = methodEnsMembership.getReturnType();
-		if (!returnType.equals(Boolean.class)){
+		if (!(returnType.equals(Boolean.class) || returnType.equals(boolean.class))){
 			throw new ParseException(
 					"The return type must be always the Boolean primitive java type");
 		}
+		// XXX: stronger parsing of ensembles, by crossing different cases
 		// check methodEnsMembership parameter annotations on multiplicity (=1) and value
-		EEnsembleParty ensembleIdentifier = null;
 		Annotation[][] annotations = methodEnsMembership.getParameterAnnotations();
-		int i = 0;
-		while (ensembleIdentifier == null && i < annotations.length){
-			// there must one and only one annotation above each membership parameter at this time
-			if (annotations[i].length == 1){
-				//TODO: from now, just simply initialize the ensembleIdentifier, by priority
-				if (ensembleIdentifier == null){
-					Annotation a = annotations[i][0];
-					// warning: it is a startsWith for the member(s) keyword!
-					if (a.annotationType().equals(In.class) && ((In) a).value().startsWith(PathGrammar.MEMBERS)){
-						ensembleIdentifier = EEnsembleParty.MEMBERS;
-						// TODO: there should be as many Members annotations in MembersArray as types of members path in the parameters
-						// TODO: check the annotation deeper: if a path is for getting IDS, the type should be a list of strings ?
-					}else if (a.annotationType().equals(In.class) && ((In) a).value().startsWith(PathGrammar.MEMBER)){
-						ensembleIdentifier = EEnsembleParty.MEMBER;		
-						// TODO: check the annotation deeper: if a path is for getting the id, the type should be a string ?
-					}
-				}
-			}else if (annotations[i].length == 0){
+		// lists of annotations per parameter type
+		List<Annotation> memberParameterAnnotations = new ArrayList<Annotation> ();
+		List<Annotation> membersParameterAnnotations = new ArrayList<Annotation> ();
+		List<Annotation> selectorsParameterAnnotations = new ArrayList<Annotation> ();
+		List<Annotation> membersetParameterAnnotations = new ArrayList<Annotation> ();
+		// requirement : there should be parameters
+		if (annotations[0].length == 0){
+			throw new ParseException(
+					"A membership parameter must have in/inOut/out annotation");
+		}
+		// differentiates the parameter annotations
+		// * just member parameters then MemberMembershipMethod
+		// * just members parameters then MembersMembershipMethod
+		// * members and selectors parameters then SelectedMembersMembershipMethod
+		for (int i = 0; i < annotations.length; i++){
+			Annotation a = annotations[i][0];
+			// requirement : only one annotation per parameter
+			if (annotations[i].length > 1){
 				throw new ParseException(
-						"A membership parameter has not any in/inOut/out annotation");
+						"A membership parameter should have only one in or inOut or out annotation");
+			}
+			// registers the member/members annotations
+			if (a.annotationType().equals(In.class)){
+				// WARNING: the startsWith can set priority cases between the grammar keywords !
+				// memberset
+				if (((In) a).value().startsWith(PathGrammar.MEMBERSET)){
+					membersetParameterAnnotations.add(a);
+				// members
+				}else if (((In) a).value().startsWith(PathGrammar.MEMBERS)){
+					membersParameterAnnotations.add(a);
+				// member
+				}else if (((In) a).value().startsWith(PathGrammar.MEMBER)){
+					memberParameterAnnotations.add(a);
+				}
+				
+			}else if(a.annotationType().equals(Selector.class)){
+				selectorsParameterAnnotations.add(a);
 			}else{
 				throw new ParseException(
 						"A membership parameter has more than one in/inOut/out annotation");
 			}
-			i++;
+		}
+		// there should not be member annotations mixed with selectors annotations
+		if (memberParameterAnnotations.size() > 0 && selectorsParameterAnnotations.size() > 0){
+			throw new ParseException(
+				"The membership function can't have both member paths and selectors paths altogether");
+		}
+		// no selector when using the memberset annotation
+		if (membersetParameterAnnotations.size() > 0 && (selectorsParameterAnnotations.size() > 0 || membersParameterAnnotations.size() > 0)){
+			throw new ParseException(
+				"The membership function can't have both memberset paths and selectors/members paths altogether");
 		}
 		// instantiate the membership according to the returnType class and the EEnsembleParty identifier
 		AbstractMembershipMethod<?> membership = null;
-		if (ensembleIdentifier.equals(EEnsembleParty.MEMBER)){
+		if (memberParameterAnnotations.size() > 0){
 			membership = new MemberMembershipMethod(pm);
-		}else if (ensembleIdentifier.equals(EEnsembleParty.MEMBERS)){
-			// basic tests for the selector method have already been passed
-			// TODO: additional treatment for the param.sel.meth?!
-			// we create the selector method for the membership
+		}else if (membersParameterAnnotations.size() > 0){
+			// TODO : checks the number of selectors according to the members annotations
+			// Extracts the selectors from the function parameters and imposes the hierarchy by group identifiers
 			pm = ParserHelper.extractParametrizedSelectorMethod(methodEnsMembership);
-			membership = new MembersMembershipMethod((ParameterizedSelectorMethod) pm);
+			membership = new SelectedMembersMembershipMethod((ParameterizedSelectorMethod) pm);
+		}else if (membersetParameterAnnotations.size() > 0){
+			membership = new MembersetMembershipMethod(pm);
 		}
+		
 		// knowledge exchange parsing
 		final Method knowledgeExchangeMethod = AnnotationHelper
 				.getAnnotatedMethod(c, KnowledgeExchange.class);
@@ -124,12 +156,12 @@ public class EnsembleParser {
 		}
 
 		ParameterizedMethod knowledgeExchange = null;
-		if (ensembleIdentifier.equals(EEnsembleParty.MEMBER)){
+		// simple extraction of in/inout/out inline parameters from the knowledge exchange method
+		if (membership instanceof MemberMembershipMethod || membership instanceof MembersetMembershipMethod){
 			knowledgeExchange = ParserHelper.extractParametrizedMethod(knowledgeExchangeMethod);
-		}else if (ensembleIdentifier.equals(EEnsembleParty.MEMBERS)){
-			// the membership selectors poopulate explicitly the knowledge exchange selectors
+		// the membership selectors poopulate explicitly the knowledge exchange selectors
+		}else if (membership instanceof SelectedMembersMembershipMethod){
 			knowledgeExchange = ParserHelper.extractImplicitParametrizedSelectorMethod(knowledgeExchangeMethod, ((ParameterizedSelectorMethod) pm).selectors);
-			//TODO: additional treatment for kno.exch.param.Method
 		}
 		
 		if (knowledgeExchange == null) {

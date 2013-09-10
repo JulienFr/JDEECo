@@ -16,11 +16,11 @@ import cz.cuni.mff.d3s.deeco.invokable.parameters.SelectorParameter;
  * @author Julien Malvot
  *
  */
-public class MembersMembershipMethod extends AbstractMembershipMethod<ParameterizedSelectorMethod> {
+public class SelectedMembersMembershipMethod extends AbstractMembershipMethod<ParameterizedSelectorMethod> {
 
 	private static final long serialVersionUID = 1L;
 
-	public MembersMembershipMethod(ParameterizedSelectorMethod method) {
+	public SelectedMembersMembershipMethod(ParameterizedSelectorMethod method) {
 		super(method);
 	}
 	

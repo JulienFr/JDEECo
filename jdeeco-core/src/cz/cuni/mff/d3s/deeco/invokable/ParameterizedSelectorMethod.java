@@ -8,7 +8,7 @@ import cz.cuni.mff.d3s.deeco.invokable.parameters.SelectorParameter;
 
 /**
  * The selector method has selector parameters to group parameters by their selector identifier.
- * This is used in the context of a {@link MembersMembershipMethod}
+ * This is used in the context of a {@link SelectedMembersMembershipMethod}
  * 
  * @author Julien Malvot
  *

@@ -80,6 +80,23 @@ public abstract class SchedulableProcess implements Serializable {
 	protected Object[] getParameterMethodValues(List<Parameter> in,
 			List<Parameter> inOut, List<Parameter> out, ISession session,
 			String coordinator, String member) throws KMException {
+		return getParameterMethodValues(in, inOut, out, session, coordinator, Arrays.asList(member));
+	}
+	
+	/**
+	 * Concerns a list of input candidates
+	 * @param in
+	 * @param inOut
+	 * @param out
+	 * @param session
+	 * @param coordinator
+	 * @param candidates
+	 * @return
+	 * @throws KMException
+	 */
+	protected Object[] getParameterMethodValues(List<Parameter> in,
+			List<Parameter> inOut, List<Parameter> out, ISession session,
+			String coordinator, List<String> members) throws KMException {
 		final List<Parameter> parametersIn = new ArrayList<Parameter>();
 		parametersIn.addAll(in);
 		parametersIn.addAll(inOut);
@@ -95,10 +112,8 @@ public abstract class SchedulableProcess implements Serializable {
 		try {
 			while (localSession.repeat()) {
 				for (Parameter p : parametersIn) {
-					// the change concerns the input array of candidates to the getParameterInstance
-					value = getNodeParameterInstance(p, coordinator, member, km,
+					value = getNodeParameterInstance(p, coordinator, members, km,
 							localSession);
-					//Log.i(p.kPath.toString());
 					result[p.index] = value;
 				}
 				if (session == null)
@@ -158,7 +173,9 @@ public abstract class SchedulableProcess implements Serializable {
 					String knowledgePath = coordinatorParameters.get(index).kPath.getEvaluatedPath(km, (String)coordinator, null, localSession);
 					// check in the knowledge repository if the set of knowledge paths is applicable to the given member id
 					try{
-						if (!km.containsKnowledge(knowledgePath)){
+						// there could be some members parameters at the same level of hierarchy in case of a MembersMethodMembership
+						// not in the SelectedMembersMethodMembership as the rest of the parameters gets under the selectors hierarchy level
+						if (!coordinatorParameters.get(index).kPath.isMembersetPath() && !km.containsKnowledge(knowledgePath)){
 							break;
 						}
 					}catch (KMException kme){
@@ -222,22 +239,33 @@ public abstract class SchedulableProcess implements Serializable {
 						//Log.i(p.kPath.toString());
 						result[p.index] = value;
 					}
-					// the groups
-					for (int i = 0; i < selectors.size(); i++){
-						SelectorParameter sp = selectors.get(i);
-						List<String> group = groups.get(i);
-						parametersIn.clear();
-						parametersIn.addAll(sp.groupIn);
-						parametersIn.addAll(sp.groupInOut);
-						// for each input parameter of the selector
+					// for SelectedMembersMembershipMethods
+					if (selectors != null){
+						// the groups
+						for (int i = 0; i < selectors.size(); i++){
+							SelectorParameter sp = selectors.get(i);
+							List<String> group = groups.get(i);
+							parametersIn.clear();
+							parametersIn.addAll(sp.groupIn);
+							parametersIn.addAll(sp.groupInOut);
+							// for each input parameter of the selector
+							for (Parameter p : parametersIn) {
+								// the change concerns the input array of candidates to the getParameterInstance
+								value = getMemberGroupParameterInstance(p, group, km, localSession);
+								//Log.i(p.kPath.toString());
+								result[p.index] = value;
+							}
+						}
+					// for MembersMembershipMethods with a single group
+					}else if (groups.size() == 1){
+						// for each input parameter
 						for (Parameter p : parametersIn) {
 							// the change concerns the input array of candidates to the getParameterInstance
-							value = getMemberGroupParameterInstance(p, group, km, localSession);
+							value = getMemberGroupParameterInstance(p, groups.get(0), km, localSession);
 							//Log.i(p.kPath.toString());
 							result[p.index] = value;
 						}
 					}
-						
 				}catch (KMException kme){
 					
 				}
@@ -313,6 +341,13 @@ public abstract class SchedulableProcess implements Serializable {
 	protected void putParameterMethodValues(Object[] parameterValues,
 			List<Parameter> inOut, List<Parameter> out, ISession session,
 			String coordinator, String member) {
+		putParameterMethodValues(parameterValues, inOut, out, session, coordinator, Arrays.asList(member));
+	}
+	
+	protected void putParameterMethodValues(Object[] parameterValues,
+			List<Parameter> inOut, List<Parameter> out, ISession session,
+			String coordinator, List<String> members) {
+		
 		if (parameterValues != null) {
 			final List<Parameter> parameters = new ArrayList<Parameter>();
 			parameters.addAll(out);
@@ -326,7 +361,12 @@ public abstract class SchedulableProcess implements Serializable {
 			try {
 				while (localSession.repeat()) {
 					for (Parameter p : parameters) {
-						putNodeParameterInstance(p, parameterValues, coordinator, member, km, localSession);
+						// if concerns all the members
+						if (p.kPath.isMembersetPath())
+							putNodeParameterInstance(p, parameterValues, coordinator, members, km, localSession);
+						// otherwise limits to the coordinator with a single iteration
+						else
+							putNodeParameterInstance(p, parameterValues, coordinator, Arrays.asList(coordinator), km, localSession);
 					}
 					if (session == null)
 						localSession.end();
@@ -358,7 +398,7 @@ public abstract class SchedulableProcess implements Serializable {
 				while (localSession.repeat()) {
 					// the coordinator
 					for (Parameter p : parameters) {
-						putNodeParameterInstance(p, parameterValues, coordinator, coordinator, km, localSession);
+						putNodeParameterInstance(p, parameterValues, coordinator, Arrays.asList(coordinator), km, localSession);
 					}
 					// the groups
 					for (int i = 0; i < selectors.size(); i++){
@@ -424,15 +464,30 @@ public abstract class SchedulableProcess implements Serializable {
 	 * @throws Exception
 	 */
 	private void putNodeParameterInstance(Parameter p, Object[] parameterValues, String coordinator,
-			String member, KnowledgeManager km, ISession session) throws KMException, Exception {
+			List<String> members, KnowledgeManager km, ISession session) throws KMException, Exception {
 		
 		Object parameterValue = parameterValues[p.index];
-		km.alterKnowledge(
-				p.kPath.getEvaluatedPath(km, coordinator,
-						member, session),
-				p.type.isOutWrapper() ? ((OutWrapper) parameterValue).value
-						: parameterValue, session);
+		Boolean isOutWrapper = p.type.isOutWrapper();
+		// the treatment of the parameter can be different regarding the type of the output object (OutWrapper...)
+		Object iteratedValue = (isOutWrapper ? ((OutWrapper<?>) parameterValue).value : parameterValue);
+		// retrieve the knowledge for each path into an array
+		for (int i = 0; i < members.size(); i++){
+			// select the right object value regarding the type of the output object (OutWrapper...)
+			Object value = null;
+			// if the path is not coordinator-related then dealing with an array of ids
+			if (p.kPath.isMembersetPath() && TypeUtils.isList(iteratedValue.getClass())){
+				value = ((List<?>) iteratedValue).get(i);
+			}else{
+				value = iteratedValue;
+			}
+			// alter the knowledge of coordinator-candidate pairs with the given value (from the list or as a primitive)
+			// the coordinator will then collect all the related candidate knowledge in lists
+			km.alterKnowledge(
+				p.kPath.getEvaluatedPath(km, coordinator, members.get(i), session), 
+				value, session);
+		}
 	}
+	
 	
 	/**
 	 * 
@@ -509,6 +564,60 @@ public abstract class SchedulableProcess implements Serializable {
 		}
 		// retrieve the knowledge for each path into an array
 		objectValue = km.getKnowledge(p.kPath.getEvaluatedPath(km, coordinator, member, session), td, session);
+		// assign the object value to the proper returned object
+		if (isOutWrapper){
+			ow.value = objectValue;
+			objectReturn = ow;
+		}else{
+			objectReturn = objectValue;
+		}
+		// return the OutWrapper or the object to be returned
+		return objectReturn;
+	}
+	
+	private Object getNodeParameterInstance(Parameter p, String coordinator,
+			List<String> members, KnowledgeManager km, ISession session)
+			throws KMException, Exception {
+		OutWrapper ow = null;
+		Object objectReturn = null;
+		Object objectValue = null;
+		TypeDescription tdUnit = null;
+		Boolean isOutWrapper = p.type.isOutWrapper();
+		// Caution: the type description is the p.type when manipulating a knowledge parameter
+		// when we manipulate an outwrapper, we must take the type description which is wrapped !
+		// that affects the process of knowledge retrieving
+		TypeDescription td = null;
+		// in case of an out wrapper
+		if (isOutWrapper){
+			ow = (OutWrapper) p.type.newInstance();
+			td = p.type.getParametricTypeAt(0);
+		}else{
+			td = p.type;
+		}
+		// define some states of the parameter
+		Boolean isMembersetPath = p.kPath.isMembersetPath();
+		Boolean isList = td.isList();
+		// the type description unit is the type to be retrieved for one iteration on the loop
+		// can differ regarding the input type (for instance in an OutWrapper<List<T>>)
+		// the treatment for candidates is iterative
+		if (isMembersetPath && isList){
+			tdUnit = p.type.getParametricTypeAt(0);
+		}else{
+			tdUnit = td;
+		}
+		Object[] membersKnowledge = new Object[members.size()];
+		// retrieve the knowledge for each path into an array
+		for (int i = 0; i < members.size(); i++){
+			membersKnowledge[i] = km.getKnowledge(p.kPath.getEvaluatedPath(km, coordinator, members.get(i), session), tdUnit, session);
+		}
+		// different treatment for the result regarding the knowledge type
+		if (isMembersetPath && td.isList()){
+			objectValue = Arrays.asList(membersKnowledge);
+		}else if (isMembersetPath){
+			throw new Exception("getParameterInstance : Type for this parameter is not supported yet");
+		}else{
+			objectValue = membersKnowledge[0];
+		}
 		// assign the object value to the proper returned object
 		if (isOutWrapper){
 			ow.value = objectValue;
@@ -599,6 +708,16 @@ public abstract class SchedulableProcess implements Serializable {
 		return p.groupSelection;
 	}
 	
+	protected List<Parameter> getMembersParameters(List<Parameter> parameters){
+		List<Parameter> membersParameters = new ArrayList<Parameter> ();
+		for (Parameter p : parameters){
+			if (p.kPath.isMembersetPath()){
+				membersParameters.add(p);
+			}
+		}
+		return membersParameters;
+	}
+	
 	/**
 	 * Defines the member groups according to the selectors and the identified parameters using the getGroupMembers
 	 * into lists of ids per group.
@@ -611,11 +730,67 @@ public abstract class SchedulableProcess implements Serializable {
 	protected List<List<String>> getMemberGroups(List<SelectorParameter> selectors, Object[] members, ISession session) throws KMException {
 		// get all member groups by identifier
 		List<List<String>> groups = new ArrayList<List<String>>();
+		List<String> group = null;
 		for (SelectorParameter selector : selectors){
-			List<String> group = getGroupMembers(selector, members, session);
+			List<Parameter> parameters = new ArrayList<Parameter>();
+			// insert all parameters related to the given selector (grouping the ids under a groupId)
+			parameters.addAll(selector.groupIn);
+			parameters.addAll(selector.groupInOut);
+			parameters.addAll(selector.groupOut);
+			group = getGroupMembers(parameters, members, session);
 			groups.add(group);
 		}
 		return groups;
+	}
+	
+	/**
+	 * retrieves all the ids of the nodes respecting the input parameters using duck-typing
+	 * @param selector
+	 * @param members
+	 * @param session
+	 * @return
+	 * @throws KMException
+	 */
+	protected List<String> getGroupMembers(List<Parameter> parameters, String coordinator, Object[] members, ISession session) throws KMException{
+		List<String> groupMembers = new ArrayList<String> ();
+		// start session and loop over the identified parametersIn
+		ISession localSession;
+		if (session == null) {
+			localSession = km.createSession();
+			localSession.begin();
+		} else
+			localSession = session;
+		try {
+			while (localSession.repeat()) {
+				for (Object member : members){
+					// pack all paths from the id perspective into an array
+					Integer index = 0;
+					while (index < parameters.size()){
+						// this part deals with the duck-typing by checking the presence of the knowledge in the knowledge repository via the knowledge manager
+						String knowledgePath = parameters.get(index).kPath.getEvaluatedPath(km, coordinator, (String)member, localSession);
+						try{
+							if (!km.containsKnowledge(knowledgePath)){
+								break;
+							}
+						}catch (KMException kme){
+						}
+						index++;
+					}
+					// if the member is effectively matching the set of parameters' paths against the identifier
+					if (index == parameters.size()){
+						groupMembers.add((String)member);
+					}
+				}
+				if (session == null)
+					localSession.end();
+				else
+					break;
+			}
+			return groupMembers;
+		} catch (Exception e) {
+			Log.e("", e);
+			return null;
+		}
 	}
 	
 	/**
@@ -626,13 +801,8 @@ public abstract class SchedulableProcess implements Serializable {
 	 * @return
 	 * @throws KMException
 	 */
-	private List<String> getGroupMembers(SelectorParameter selector, Object[] members, ISession session) throws KMException{
+	protected List<String> getGroupMembers(List<Parameter> parameters, Object[] members, ISession session) throws KMException{
 		List<String> groupMembers = new ArrayList<String> ();
-		List<Parameter> parameters = new ArrayList<Parameter>();
-		// insert all parameters related to the given selector (grouping the ids under a groupId)
-		parameters.addAll(selector.groupIn);
-		parameters.addAll(selector.groupInOut);
-		parameters.addAll(selector.groupOut);
 		// start session and loop over the identified parametersIn
 		ISession localSession;
 		if (session == null) {

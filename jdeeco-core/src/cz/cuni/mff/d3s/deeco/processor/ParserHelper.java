@@ -119,12 +119,15 @@ public class ParserHelper {
 			
 		KnowledgePath kPath = new KnowledgePath(path);
 		String groupId = kPath.getGroupIdentifier();
-		if ((groupId == null && !hasGroup) || (groupId != null && hasGroup)){
+		// critical point of the parsing
+		// if there is no members path and the annotation caller is a usual parameter in/inout/out
+		if ((groupId == null && !hasGroup)
+				// or if the kPath is a members path with an identifier defined and the function is called from a selector
+				|| (groupId != null && hasGroup)){
 			return new Parameter(kPath, type, index);
 		}
 		return null;
 	}
-	
 	
 	private static Parameter parseNamedGroupAnnotation(Annotation annotation, Class<?> annotationType,
 			Type type, int index, String root, String groupId) throws ParseException, ComponentEnsembleParseException {

@@ -8,7 +8,7 @@ import cz.cuni.mff.d3s.deeco.invokable.parameters.Parameter;
 
 /**
  * This abstract class contains a method with parameters.
- * It is a superclass to types of membership methods which can be extended to other types of parameters (e.g. selectors for {@link MembersMembershipMethod} )
+ * It is a superclass to types of membership methods which can be extended to other types of parameters (e.g. selectors for {@link SelectedMembersMembershipMethod} )
  * 
  * @author Julien Malvot
  *
