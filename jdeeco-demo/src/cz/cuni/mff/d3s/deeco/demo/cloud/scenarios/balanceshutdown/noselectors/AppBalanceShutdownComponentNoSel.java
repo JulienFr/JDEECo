@@ -1,4 +1,4 @@
-package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown;
+package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown.noselectors;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -16,6 +16,7 @@ import cz.cuni.mff.d3s.deeco.annotations.PeriodicScheduling;
 import cz.cuni.mff.d3s.deeco.annotations.Process;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.Snapshot;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.AppDeploymentBalancer;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown.NoBackupNodeFound;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.AppDeploymentComponent;
 import cz.cuni.mff.d3s.deeco.knowledge.Component;
 import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
@@ -30,18 +31,18 @@ import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
  * @author Julien Malvot
  * 
  */
-public class AppBalanceShutdownComponent extends Component {
+public class AppBalanceShutdownComponentNoSel extends Component {
 	
 	public final static long serialVersionUID = 1L;
 	/** balance role of the component for managing the other application instances */
-	public AppShutdownBalancer balancer;
+	public AppShutdownBalancerNoSel balancer;
 	/** component state snapshot which can be provided to a backup node */
 	public Snapshot snapshot;
 	
 	/** constructor for the Application Component
 	 * @param id
 	 */
-	public AppBalanceShutdownComponent(String id) {
+	public AppBalanceShutdownComponentNoSel(String id) {
 		this.id = id;
 		this.snapshot = null;
 	}
@@ -51,7 +52,7 @@ public class AppBalanceShutdownComponent extends Component {
 	 * @param id
 	 * @param balancer The balancing role of the application component. There should be one per working set of application components.
 	 */
-	public AppBalanceShutdownComponent(String id, AppShutdownBalancer balancer) {
+	public AppBalanceShutdownComponentNoSel(String id, AppShutdownBalancerNoSel balancer) {
 		this.id = id;
 		this.balancer = balancer;
 		this.snapshot = null;
@@ -77,7 +78,7 @@ public class AppBalanceShutdownComponent extends Component {
 	@Process
 	@PeriodicScheduling(2000)
 	public static void deploy(
-			@InOut("balancer") OutWrapper<AppShutdownBalancer> balancer) {
+			@InOut("balancer") OutWrapper<AppShutdownBalancerNoSel> balancer) {
 		// if scp nodes have been selected
 		if (balancer.value != null && balancer.value.isAppDeployed != null && !balancer.value.isAppDeployed && !balancer.value.scpIds.isEmpty()){
 			balancer.value.deploy();
@@ -86,7 +87,7 @@ public class AppBalanceShutdownComponent extends Component {
 	
 	@Process
 	@PeriodicScheduling(5000)
-	public static void shutdown(@InOut("balancer") OutWrapper<AppShutdownBalancer> balancer){
+	public static void shutdown(@InOut("balancer") OutWrapper<AppShutdownBalancerNoSel> balancer){
 		if (balancer.value != null && balancer.value.isAppDeployed != null && balancer.value.isAppDeployed){
 			try {
 				balancer.value.shutdown();

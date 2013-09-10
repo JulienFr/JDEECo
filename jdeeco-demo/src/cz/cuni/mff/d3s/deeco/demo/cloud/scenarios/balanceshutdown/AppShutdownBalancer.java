@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.LogHelper;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.Snapshot;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.AppDeploymentBalancer;
 
@@ -52,13 +53,20 @@ public class AppShutdownBalancer extends AppDeploymentBalancer {
 		this.buScpIds = new ArrayList<List<String>> ();
 	}
 	
-	public void deploy() {
+	public void initializeDeployment(){
 		super.deploy();
 		// populates initial lists in the buAppIds
 		for (int i = 0; i < buIds.size(); i++){
 			appBuIds.add("");
 			buScpIds.add(new ArrayList<String> ());
 		}
+	}
+	
+	/**
+	 * separation of concerns for subclasses which require deployment with custom backup node selection
+	 * @throws NoBackupNodeFound 
+	 */
+	public void deployResponsabilities() throws NoBackupNodeFound{
 		// finds the initial scp ids to monitor
 		List<String> scpIdsToMonitor = new ArrayList<String> ();
 		for (int i = 0; i < scpAppIds.size(); i++){
@@ -75,7 +83,16 @@ public class AppShutdownBalancer extends AppDeploymentBalancer {
 		}
 	}
 	
-	public void shutdown(){
+	public void deploy() {
+		initializeDeployment();
+		try {
+			deployResponsabilities();
+		} catch (NoBackupNodeFound e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void shutdown() throws NoBackupNodeFound{
 		// shutdowns a scp node intentionally
 		Random r = new Random();
 		Integer shutdownScpIndex = r.nextInt(scpIds.size());
@@ -116,7 +133,7 @@ public class AppShutdownBalancer extends AppDeploymentBalancer {
 			// step 4.2 : attaches the application part to the scp node (which was a backup scp node)
 			scpAppIds.get(scpIndex).add(appId);
 			
-			System.out.println(scpIds.get(scpIndex) + " runs " + getIdsString(scpAppIds.get(scpIndex)));
+			System.out.println(scpIds.get(scpIndex) + " runs " + LogHelper.getIdsString(scpAppIds.get(scpIndex)));
 		}
 		// assign roles to the backup/monitor scp nodes, scp nodes
 		try {
@@ -133,18 +150,15 @@ public class AppShutdownBalancer extends AppDeploymentBalancer {
 		return (scpIndex != -1 && scpAppIds.get(scpIndex).indexOf(appId) != -1);
 	}
 	
-	private String getIdsString(List<String> ids){
-		String str = "";
-		for (String i : ids){
-			str += i + (!i.equals(ids.get(ids.size()-1)) ? ", " : "");
-		}
-		return str;
-	}
-	
-	private void assignResponsabilities(List<String> appIdsToBackup, List<String> scpIdsToMonitor) throws BackupNodeNotFound, MonitoringNodeNotFound{
+	private void assignResponsabilities(List<String> appIdsToBackup, List<String> scpIdsToMonitor) throws BackupNodeNotFound, MonitoringNodeNotFound, NoBackupNodeFound{
 		// step 5 of shutdown : finds backup nodes for the application parts
 		Iterator<String> itr = appIdsToBackup.iterator();
 		Integer buIndex = 0;
+		// there should be some backup nodes left
+		if (buIds.size() == 0){
+			throw new NoBackupNodeFound();
+		}
+		// iterates over the application parts to attach them to backup nodes
 		while (itr.hasNext()){
 			String appId = itr.next();
 			Integer appIndex = appIds.indexOf(appId);
@@ -169,7 +183,7 @@ public class AppShutdownBalancer extends AppDeploymentBalancer {
 						buAppIds.add(appIds.get(i));
 					}
 				}
-				System.out.println(buId + " backs up " + getIdsString(buAppIds));
+				System.out.println(buId + " backs up " + LogHelper.getIdsString(buAppIds));
 			}
 			// enables a rotation in the selection for balancing
 			buIndex++;
@@ -195,7 +209,7 @@ public class AppShutdownBalancer extends AppDeploymentBalancer {
 				// sets the monitoring scp node of the scp node
 				if (buId != null){
 					buScpIds.get(buIndex).add(scpId);
-					System.out.println(buId + " monitors " + getIdsString(buScpIds.get(buIndex)));
+					System.out.println(buId + " monitors " + LogHelper.getIdsString(buScpIds.get(buIndex)));
 				}
 				// enables a rotation in the selection for balancing
 				buIndex++;

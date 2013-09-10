@@ -1,25 +1,46 @@
-package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment;
+package cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.noselectors;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import cz.cuni.mff.d3s.deeco.annotations.In;
-import cz.cuni.mff.d3s.deeco.annotations.KnowledgeExchange;
-import cz.cuni.mff.d3s.deeco.annotations.Membership;
-import cz.cuni.mff.d3s.deeco.annotations.Out;
-import cz.cuni.mff.d3s.deeco.annotations.PeriodicScheduling;
-import cz.cuni.mff.d3s.deeco.annotations.Selector;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.LogHelper;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ScpLatencyData;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.ScpLatencyDataComparator;
+import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.AppDeploymentBalancer;
 import cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.shutdown.DeployShutdownEnsemble;
-import cz.cuni.mff.d3s.deeco.ensemble.Ensemble;
-import cz.cuni.mff.d3s.deeco.knowledge.OutWrapper;
 
-public class SelectScpComponentsForDeploymentEnsemble extends Ensemble {
+public class AppDeploymentBalancerNoSel extends AppDeploymentBalancer {
+
+	/** list of scp latencies */
+	public List<Map<String, ScpLatencyData>> scpLatencies;
+	/**
+	 * Default constructor.
+	 * Must exist for being well-stored in the repository
+	 */
+	public AppDeploymentBalancerNoSel() {
+		super();
+	}
+	/**
+	 * Constructor with an initial set of application parts which the balancer
+	 * will have to deploy. This must be called by the application part responsible for the full deployment.
+	 *
+	 * @param appIds
+	 */
+	public AppDeploymentBalancerNoSel(List<String> appIds) {
+		super(appIds);
+		scpLatencies = new ArrayList<Map<String, ScpLatencyData>>();
+	}
 	
-	private static List<ScpLatencyData> scpSelectLatenciesFromSLA(List<Map<String, ScpLatencyData>> scpLatencies){
+	public void deploy(){
+		// takes only the scp ids which respect the SLA and are well connected by best latencies
+		scpIds = selectScpNodes(appIds, scpIds, getScpSelectLatenciesFromSLA());
+		// all AppComponents are now deployed by ScpComponents
+		super.deploy();
+	}
+	
+	private List<ScpLatencyData> getScpSelectLatenciesFromSLA(){
 		// transforming the List<Map> data structure into a List data structure
 		List<ScpLatencyData> mLatencies = new ArrayList<ScpLatencyData> ();
 		for (int i = 0; i < scpLatencies.size(); i++){
@@ -49,21 +70,23 @@ public class SelectScpComponentsForDeploymentEnsemble extends Ensemble {
 	 * @param scpSLASelectedLatencies the input list of ScpDSComponentOSLatencyData based on the SLA contract
 	 * @param range
 	 */
-	public static void scpSelection(List<Boolean> selectors, List<String> scpIds, List<ScpLatencyData> scpSLASelectedLatencies, int range){
+	public static List<String> selectScpNodes(List<String> appIds, List<String> scpIds, List<ScpLatencyData> scpSelectLatenciesFromSLA){
+		
+		System.out.println("Balancer selects the scp nodes from the latencies");
+		
+		int range = appIds.size();
+		// = getScpSelectLatenciesFromSLA();
 		List<String> mLinkedIds = new ArrayList<String> ();
-		// set all selectors to false
-		for (int i = 0; i < selectors.size(); i++)
-			selectors.set(i, false);
 		// sort all the list of links by order of latency
-		Collections.sort(scpSLASelectedLatencies, new ScpLatencyDataComparator());
+		Collections.sort(scpSelectLatenciesFromSLA, new ScpLatencyDataComparator());
 		// reuse the initial implemented algorithm
 		Integer indexer = -1; // the first required id to be explored for starting the exploration
 		// while the linkedIds set is not well-sized or the algorithm runs out of possibilities
-		while (mLinkedIds.size() < range && (range+indexer) <= scpSLASelectedLatencies.size()){
+		while (mLinkedIds.size() < range && (range+indexer) <= scpSelectLatenciesFromSLA.size()){
 			mLinkedIds.clear();
 			Integer firstAddIndex = 0;
-			for (int i = 0; i < scpSLASelectedLatencies.size(); i++){
-				ScpLatencyData latencyData = (ScpLatencyData) scpSLASelectedLatencies.get(i);
+			for (int i = 0; i < scpSelectLatenciesFromSLA.size(); i++){
+				ScpLatencyData latencyData = (ScpLatencyData) scpSelectLatenciesFromSLA.get(i);
 				// if the latencyData respects the maximum sla latency
 				if (i > indexer){
 					// first add into the linkage group
@@ -95,53 +118,7 @@ public class SelectScpComponentsForDeploymentEnsemble extends Ensemble {
 			if (mLinkedIds.size() < range)
 				indexer = firstAddIndex;
 		}
-		// setting up the list of booleans
-		for (int i = 0; i < mLinkedIds.size(); i++){
-			int index = scpIds.indexOf(mLinkedIds.get(i));
-			selectors.set(index, true);
-		}
-	}
-	
-	@Membership
-	public static Boolean membership(
-			// AppComponent coordinator
-			@In("coord.id") String cAppId,
-			@In("coord.balancer.appIds") List<String> appIds,
-			@In("coord.balancer.isAppDeployed") Boolean isDeployed,
-			// ScpComponent members
-			@Selector("Scp") List<Boolean> msScpSelectors,
-			@In("members.Scp.id") List<String> msScpIds,
-			@In("members.Scp.latencies") List<Map<String, ScpLatencyData>> scpLatencies
-			) {
-		if (isDeployed != null && !isDeployed){
-			// select the latencies based on the SLA
-			List<ScpLatencyData> slaSelectedLatencies = scpSelectLatenciesFromSLA(scpLatencies);
-			// scp selection
-			scpSelection(msScpSelectors, msScpIds, slaSelectedLatencies, appIds.size());
-			// here we go
-			return true;
-		}
-		return false;
-	}
-
-	// to expand to different cdScpInstanceIds in case of high candidate range
-	@KnowledgeExchange
-	@PeriodicScheduling(3000)
-	public static void map(
-			// AppComponent coordinator (1)
-			@In("coord.id") String appId,
-			@Out("coord.balancer.scpIds") OutWrapper<List<String>> scpIds,
-			// ScpComponent members (n)
-			@In("members.Scp.id") List<String> msScpIds) {
-		// retains all the scp ids into the balancer
-		scpIds.value = msScpIds;
-		
-		String scpComponentIds = msScpIds.get(0);
-		// linkage
-		for (int i = 1; i < msScpIds.size(); i++){
-			scpComponentIds += " " + msScpIds.get(i);
-		}
-		System.out.println("The application (balancer) coordinator "+appId +  
-							" has formed an ensemble with the ScpComponents " +scpComponentIds);
+		System.out.println("Balancer keeps the scp nodes " + LogHelper.getIdsString(mLinkedIds));
+		return mLinkedIds;
 	}
 }

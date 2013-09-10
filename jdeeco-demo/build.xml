@@ -8,7 +8,21 @@
 	<property name="river" location="${dist}/apache-river"/>
 	<property name="jpf" location="${dist}/jpf-core"/>
 	<property name="spl" location="${dist}/../jdeeco-demo/libs/spl-agent.jar"/>
-
+	<property name="bin" location="${dist}/../jdeeco-demo/target/classes"/>
+	
+	<!-- general classpaths for the cloud scenarios -->
+	<path id="classpath-cloud">
+		<pathelement location="${bin}"/>
+		<pathelement location="${dist}/../dist/cloud.jar"/>
+		<pathelement location="${dist}/../dist/jdeeco.jar"/>
+		<pathelement location="${river}/lib/jsk-lib.jar"/>
+		<pathelement location="${river}/lib/jsk-platform.jar"/>
+	</path>
+	
+	<path id="classpath-cloud-spl">
+		<pathelement location="${spl}"/>
+	</path>
+	
 	<!-- start apache river - individual services -->
 	<target name="start-ar-httpd">
 		<java fork="true" jar="${river}/lib/classserver.jar" dir="${dist}">
@@ -49,199 +63,161 @@
 			<antcall target="start-ar-jrmp-mahalo-group"/>
 		</parallel>
 	</target>
+	
+	<!-- cloud, local memory or tuplespace-based shared memory -->
+	<target name="cloud-local-pattern">
+		<java classname="${scenario.classname}" fork="true">
+			<classpath refid="classpath-cloud" />
+			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
+			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
+		</java>
+	</target>
+	<!-- cloud, local memory or tuplespace-based shared memory, SPL -->
+	<target name="cloud-local-pattern-with-spl">
+		<java classname="${scenario.classname}" fork="true">
+			<classpath refid="classpath-cloud" />
+			<classpath refid="classpath-cloud-spl" />
+			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
+			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
+		</java>
+	</target>
 
-	<!-- start cloud demo with local shared memory -->
+	<!-- cloud, local shared memory -->
 	<target name="cloud-local" description="Runs the cloud demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.loadratio.LocalLauncherCloudNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
+		<antcall target="cloud-local-pattern">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.loadratio.LocalLauncherCloudNoJPF" />
+		</antcall>
 	</target>
 	
-	<!-- start min load cloud demo with local shared memory -->
-	<target name="cloud-local-minload" description="Runs the minload cloud demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.candidates.LocalLauncherCandidateNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
+	<!-- cloud, local shared memory, minload  -->
+	<target name="cloud-local-minload" description="Runs the demo with the features cloud, local shared memory, minload">
+		<antcall target="cloud-local-pattern">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.candidates.LocalLauncherCandidateNoJPF" />
+		</antcall>
 	</target>
 	
-	<!-- start min load cloud demo using SPL with local shared memory -->
-	<target name="cloud-local-minload-spl" description="Runs the minload spl cloud demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.candidates.LocalLauncherCandidateSPLNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-				<pathelement location="${spl}"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
+	<!-- cloud, local shared memory, min load, SPL -->
+	<target name="cloud-local-minload-spl" description="Runs the demo with the features cloud, local shared memory, min load, SPL">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.candidates.LocalLauncherCandidateSPLNoJPF" />
+		</antcall>
 	</target>
 	
-	<!-- start deployment cloud scenario (with balancer) demo with local shared memory -->
-	<target name="cloud-local-scenario-balancer-deployment" description="Runs the deployment cloud scenario demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.LocalLauncherBalanceDeploymentNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-				<pathelement location="${spl}"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
+	<!--/////////////////////////////////////////////-->
+	
+	<!-- 12 scenarios introducing features such as 
+			the balancer, 
+			the absence of selectors in the ensemble, 
+			complex versions with more nodes/application parts 
+	-->
+	<!-- cloud, local shared memory, deployment -->
+	<target name="cloud-local-deployment" description="Runs the scenario with the features cloud, local shared memory, deployment">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.LocalLauncherDeploymentNoJPF" />
+		</antcall>
 	</target>
 	
-	<!-- start the complex deployment cloud scenario (with balancer) demo with local shared memory -->
-	<target name="cloud-local-scenario-balancer-deployment-complex" description="Runs the deployment cloud scenario demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.LocalLauncherComplexBalanceDeploymentNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-				<pathelement location="${spl}"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
-	</target>
-	
-	<!-- start shutdown cloud scenario (with balancer) demo with local shared memory -->
-	<target name="cloud-local-scenario-balancer-shutdown" description="Runs the shutdown cloud scenario demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown.LocalLauncherBalanceShutdownNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-				<pathelement location="${spl}"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
-	</target>
-	
-	<!-- start the complex shutdown cloud scenario (with balancer) demo with local shared memory -->
-	<target name="cloud-local-scenario-balancer-shutdown-complex" description="Runs the shutdown cloud scenario demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown.LocalLauncherComplexBalanceShutdownNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-				<pathelement location="${spl}"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
-	</target>
-		
-	<!-- start deployment cloud scenario demo with local shared memory -->
-	<target name="cloud-local-scenario-deployment" description="Runs the deployment cloud scenario demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.LocalLauncherDSNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-				<pathelement location="${spl}"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
-	</target>
-	
-	<!-- start highload cloud scenario demo with local shared memory -->
-	<target name="cloud-local-scenario-highload" description="Runs the highload cloud scenario demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.highload.LocalLauncherHSNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-				<pathelement location="${spl}"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
-	</target>
-	
-	<!-- start shutdown cloud scenario demo with local shared memory -->
-	<target name="cloud-local-scenario-shutdown" description="Runs the shutdown cloud scenario demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.shutdown.LocalLauncherSSNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-				<pathelement location="${spl}"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
+	<!-- local shared memory, cloud, deployment, complex -->
+	<target name="cloud-local-deployment-complex" description="Runs the scenario with the features local shared memory, cloud, deployment, complex">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.deployment.LocalLauncherComplexDeploymentNoJPF" />
+		</antcall>
 	</target>
 
-	<!-- start convoy demo with local shared memory -->
+	<!-- cloud, local shared memory, deployment, balancer -->
+	<target name="cloud-local-deployment-balancer" description="Runs the scenario with the features cloud, local shared memory, deployment, balancer">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.LocalLauncherBalanceDeploymentNoJPF" />
+		</antcall>
+	</target>
+	
+	<!-- cloud, local shared memory, deployment, balancer, complex -->
+	<target name="cloud-local-deployment-balancer-complex" description="Runs the scenario with the features cloud, local shared memory, deployment, balancer, complex">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.LocalLauncherComplexBalanceDeploymentNoJPF" />
+		</antcall>
+	</target>
+	
+	<!-- cloud, local shared memory, deployment, balancer, noselectors -->
+	<target name="cloud-local-deployment-balancer-noselectors" description="Runs the scenario with the features cloud, local shared memory, deployment, balancer, noselectors">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.noselectors.LocalLauncherBalanceDeploymentNoJPFNoSel" />
+		</antcall>
+	</target>
+	
+	<!-- cloud, local shared memory, deployment, balancer, noselectors, complex -->
+	<target name="cloud-local-deployment-balancer-noselectors-complex" description="Runs the scenario with the features cloud, local shared memory, deployment, balancer, noselectors, complex">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balancedeployment.noselectors.LocalLauncherComplexBalanceDeploymentNoJPFNoSel" />
+		</antcall>
+	</target>
+	
+	<!-- cloud, local shared memory, highload -->
+	<target name="cloud-local-highload" description="Runs the scenario with the features cloud, local shared memory, highload">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.highload.LocalLauncherHighloadNoJPF" />
+		</antcall>
+	</target>
+
+	<!-- cloud, local shared memory, shutdown  -->
+	<target name="cloud-local-shutdown" description="Runs the scenario with the features cloud, local shared memory, shutdown">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.shutdown.LocalLauncherShutdownNoJPF" />
+		</antcall>
+	</target>
+	
+	<!-- cloud, local shared memory, shutdown, balancer  -->
+	<target name="cloud-local-shutdown-balancer" description="Runs the scenario with the features cloud, local shared memory, shutdown, balancer">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown.LocalLauncherBalanceShutdownNoJPF" />
+		</antcall>
+	</target>
+	
+	<!-- cloud, local shared memory, shutdown, balancer, complex -->
+	<target name="cloud-local-shutdown-balancer-complex" description="Runs the scenario with the features cloud, local shared memory, shutdown, balancer, complex">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown.LocalLauncherComplexBalanceShutdownNoJPF" />
+		</antcall>		
+	</target>
+	
+	<!-- cloud, local shared memory, shutdown, balancer, noselectors -->
+	<target name="cloud-local-shutdown-balancer-noselectors" description="Runs the scenario with the features cloud, local shared memory, shutdown, balancer, noselectors">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown.noselectors.LocalLauncherBalanceShutdownNoJPFNoSel" />
+		</antcall>
+	</target>
+	
+	<!-- cloud, local shared memory, shutdown, balancer, noselectors, complex -->
+	<target name="cloud-local-shutdown-balancer-noselectors-complex" description="Runs the scenario with the features cloud, local shared memory, shutdown, balancer, noselectors, complex">
+		<antcall target="cloud-local-pattern-with-spl">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.scenarios.balanceshutdown.noselectors.LocalLauncherComplexBalanceShutdownNoJPFNoSel" />
+		</antcall>
+	</target>
+	
+	<!--/////////////////////////////////////////////-->
+
+	<!-- cloud, tuple spaces as shared memory  -->
+	<target name="cloud-ts" description="Runs the cloud demo with tuplespace-based shared memory">		
+		<antcall target="cloud-local-pattern">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.cloud.TSLauncherCloudNoJPF" />
+		</antcall>
+	</target>
+
+	<!-- convoy, local shared memory  -->
 	<target name="convoy-local" description="Runs the convoy demo">
-		<java classname="cz.cuni.mff.d3s.deeco.demo.convoy.LocalLauncherConvoyNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/convoy.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
+		<antcall target="cloud-local-pattern">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.convoy.LocalLauncherConvoyNoJPF" />
+		</antcall>
+	</target>
+				
+	<!-- convoy, tuple spaces as shared memory -->
+	<target name="convoy-ts" description="Runs the convoy demo with tuplespace-based shared memory">				
+		<antcall target="cloud-local-pattern">
+			<param name="scenario.classname" value="cz.cuni.mff.d3s.deeco.demo.convoy.TSLauncherConvoyNoJPF" />
+		</antcall>
 	</target>
 
-	<!-- start cloud demo with tuple spaces as shared memory -->
-	<target name="cloud-ts" description="Runs the cloud demo">		
-		<java classname="cz.cuni.mff.d3s.deeco.demo.cloud.TSLauncherCloudNoJPF" fork="true">
-			<classpath>
-				<pathelement location="${dist}/cloud.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>
-	</target>
-
-	<!-- start convoy demo with tuple spaces as shared memory -->
-	<target name="convoy-ts" description="Runs the convoy demo">				
-		<java classname="cz.cuni.mff.d3s.deeco.demo.convoy.TSLauncherConvoyNoJPF" fork="true" >
-			<classpath>
-				<pathelement location="${dist}/convoy.jar"/>
-				<pathelement location="${dist}/jdeeco.jar"/>
-				<pathelement location="${river}/lib/jsk-lib.jar"/>
-				<pathelement location="${river}/lib/jsk-platform.jar"/>
-			</classpath>
-			<jvmarg value="-Djava.security.policy=${river}-config/start.policy"/>
-			<jvmarg value="-Djava.rmi.server.RMIClassLoaderSpi=net.jini.loader.pref.PreferredClassProvider"/>
-		</java>			
-	</target>
-
-
-	<!-- run cloud demo under jpf -->
+	<!-- cloud, under jpf -->
 	<target name="jpf-cloud">
 		<java fork="true" classname="cz.cuni.mff.d3s.deeco.runtime.PreprocessorLauncher" dir="${dist}">
 			<arg value="cloud.jar"/>
@@ -262,7 +238,7 @@
 		</java>
 	</target>
 
-	<!-- run convoy demo under jpf -->
+	<!-- convoy, under jpf -->
 	<target name="jpf-convoy">
 		<java fork="true" classname="cz.cuni.mff.d3s.deeco.runtime.PreprocessorLauncher" dir="${dist}">
 			<arg value="convoy.jar"/>
@@ -282,7 +258,7 @@
 		</java>
 	</target>
 
-	<!-- check ltl properties for convoy demo -->
+	<!-- convoy, check ltl properties -->
 	<target name="ltl-convoytut">
 		<java fork="true" classname="cz.cuni.mff.d3s.deeco.runtime.PreprocessorLauncher" dir="${dist}">
 			<arg value="convoytut.jar"/>
