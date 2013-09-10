@@ -106,7 +106,6 @@ public class ComponentParser {
 					null, ps, currentMethod, lm, root, null);
 			result.add(skp);
 		}
-
 		return result;
 	}
 	
@@ -126,6 +125,7 @@ public class ComponentParser {
 				assignUIDIfNotSet(ck);
 				return ck;
 			}else{
+				// XXX: the user should be warned when the knowledge extraction fails for this reason
 				throw new Exception("The default constructor of the knowledge is missing");
 			}
 		} catch (Exception e) {

@@ -180,7 +180,9 @@ public class ParserHelper {
 				return new ParameterizedMethod(in, inOut, out, method);
 			}
 		} catch (ComponentEnsembleParseException pe) {
+			Log.e("Ensemble Parsing: ", pe);
 		} catch (ParseException pe) {
+			Log.e("Ensemble Parsing: ", pe);
 		}
 		return null;
 	}

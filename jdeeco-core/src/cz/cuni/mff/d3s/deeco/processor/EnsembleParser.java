@@ -166,7 +166,7 @@ public class EnsembleParser {
 		
 		if (knowledgeExchange == null) {
 			throw new ParseException(
-					"Malformed knowledge exchange function definition.");
+					"Malformed knowledge exchange function definition. " + c);
 		}
 
 		// Look up scheduling

@@ -15,6 +15,8 @@
 		<lib>${dist}/lib</lib>
 		<bcelJar>bcel.jar</bcelJar>
 		<pathParser>src/cz/cuni/mff/d3s/deeco/path/grammar</pathParser>
+		<clonerJar>cloner.jar</clonerJar>
+		<objenesisJar>objenesis.jar</objenesisJar>
 	</properties>
 	<build>
 		<sourceDirectory>src</sourceDirectory>
@@ -64,6 +66,20 @@
 									<artifactId>cz.cuni.mff.d3s.bcel</artifactId>
 									<version>1.0.0</version>
 									<destFileName>${bcelJar}</destFileName>
+									<outputDirectory>${lib}</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>uk.com.robust-it</groupId>
+									<artifactId>cloning</artifactId>
+									<version>1.9.0</version>
+									<destFileName>${clonerJar}</destFileName>
+									<outputDirectory>${lib}</outputDirectory>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.objenesis</groupId>
+									<artifactId>objenesis</artifactId>
+									<version>1.2</version>
+									<destFileName>${objenesisJar}</destFileName>
 									<outputDirectory>${lib}</outputDirectory>
 								</artifactItem>
 							</artifactItems>
@@ -161,6 +177,18 @@
 			<groupId>cz.cuni.mff.d3s</groupId>
 			<artifactId>cz.cuni.mff.d3s.bcel</artifactId>
 			<version>1.0.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>uk.com.robust-it</groupId>
+			<artifactId>cloning</artifactId>
+			<version>1.9.0</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.objenesis</groupId>
+			<artifactId>objenesis</artifactId>
+			<version>1.2</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
