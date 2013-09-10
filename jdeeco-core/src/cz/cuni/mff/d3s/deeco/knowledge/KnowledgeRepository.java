@@ -88,7 +88,7 @@ public abstract class KnowledgeRepository {
 	 * 
 	 * The method is mainly used when there is a need to withdraw a full node from the repository.
 	 * TODO: this has to be debugged mainly for consistency reasons. Not used in the demos yet.
-	 * 
+	 * XXX: use for removing a full component from the repository with the dynamic runtime
 	 * This method is session oriented.
 	 *  
 	 * @param entryIdKey
@@ -106,6 +106,8 @@ public abstract class KnowledgeRepository {
 	
 	/**
 	 * Evaluates if the key is existing in the knowledge repository or not.
+	 * 
+	 * XXX: function to check ONLY the existence of a key in the repository
 	 * 
 	 * This is a faster alternative as it does only check the presence of the key
 	 * without withdrawing/altering/... the repository.
@@ -222,6 +224,8 @@ public abstract class KnowledgeRepository {
 	/**
 	 * Withdraws all objects related to the given id from the knowledge repository. 
 	 * 
+	 * XXX: use for removing a full component from the repository  with the dynamic runtime
+	 * 
 	 * @param entryKey
 	 *            key of the object id in the knowledge repository
 	 * @return list of objects belonging to the provided id from the knowledge repository
@@ -238,6 +242,8 @@ public abstract class KnowledgeRepository {
 	
 	/**
 	 * Evaluates if the key is existing in the knowledge repository or not.
+	 * 
+	 * XXX: function to check ONLY the existence of a key in the repository
 	 * 
 	 * @param entryKey
 	 * 			key of the object id in the knowledge repository

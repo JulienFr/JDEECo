@@ -15,6 +15,11 @@ import cz.cuni.mff.d3s.deeco.scheduling.IScheduler;
 /**
  * the dynamic runtime makes it feasible for the developer to be intentionally capable of
  * removing a node at runtime for demo purposes (e.g. high load)
+ * 
+ * XXX: compared to the usual runtime, this retains the registered provider. This can allow
+ * the user to have the ability to remove/add
+ * If multiple providers are registered, one should then consider the field as an array...
+ * 
  * @author Julien
  *
  */
@@ -110,6 +115,7 @@ public class DynamicRuntime extends Runtime implements IRuntime {
 					knowledge.id));
 		}
 		// TODO: this is not working perfectly yet
+		// Encounts dependencies when an ensemble is called prior to the complete removal of knowledge from the repository
 		km.takeAllKnowledge(knowledge.id);
 	}
 }

@@ -221,6 +221,10 @@ public class RepositoryKnowledgeManager extends KnowledgeManager {
 
 	}
 	
+	/**
+	 * XXX: function to check ONLY the existence of a knowledge path in the repository
+	 * it does not need to know the expected structure and many other preprocessings gone then
+	 */
 	@Override
 	public boolean containsKnowledge(String knowledgePath, ISession session) throws KMException {
 		if (kr == null)

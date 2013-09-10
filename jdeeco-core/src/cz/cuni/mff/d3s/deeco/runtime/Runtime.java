@@ -143,6 +143,9 @@ public class Runtime implements IRuntime {
 
 	/*
 	 * (non-Javadoc)
+	 * XXX: for demo purposes, it may be good to make an unregisterComponent function
+	 * in case of the highload. This is yet implemented in the DynamicRuntime.
+	 * If the impl would be migrated here, DynamicRuntime could be removed, and uses at runtime in the highload demo
 	 * 
 	 * @see
 	 * cz.cuni.mff.d3s.deeco.runtime.IRuntime#registerComponentsAndEnsembles
@@ -344,6 +347,7 @@ public class Runtime implements IRuntime {
 						initKnowledge.id));
 		} catch (KMNotExistentException kmnee) {
 		}
+		// XXX : TO PATCH
 		// a default constructor should exist in any knowledge structure
 		for (Field f : initKnowledge.getClass().getFields()){
 			if (Knowledge.class.isAssignableFrom(f.getType())){

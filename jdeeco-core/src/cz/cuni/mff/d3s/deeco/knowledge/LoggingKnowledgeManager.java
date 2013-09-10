@@ -46,6 +46,7 @@ public class LoggingKnowledgeManager extends KnowledgeManager {
 		return decoratedKm.takeKnowledge(knowledgePath, session);
 	}
 	
+	// XXX: use when removing a full component from the repository with the dynamic runtime
 	@Override
 	public Object[] takeAllKnowledge(String knowledgeId, ISession session)
 			throws KMException {
